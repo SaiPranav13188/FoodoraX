@@ -1,19 +1,25 @@
 {
-  "name": "@foodorax/validation",
+  "name": "@foodorax/database",
   "version": "1.0.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "prisma generate && tsc",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed",
     "typecheck": "tsc --noEmit"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "dependencies": {
-    "class-transformer": "^0.5.1",
-    "class-validator": "^0.15.1",
-    "zod": "^3.22.4"
+    "@prisma/client": "^5.22.0"
   },
   "devDependencies": {
-    "@types/node": "^20.3.1",
+    "@types/node": "^20.19.43",
+    "prisma": "^5.22.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.4.2"
   }
 }

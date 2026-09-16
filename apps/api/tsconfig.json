@@ -17,8 +17,8 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@foodorax/database": ["../../packages/database/src"],
-      "@foodorax/validation": ["../../packages/validation/src"]
+      "@foodorax/database": ["../../packages/database/dist"],
+      "@foodorax/validation": ["../../packages/validation/dist"]
     }
   },
   "include": ["src/**/*"],
