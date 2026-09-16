@@ -468,7 +468,7 @@ export default function Home() {
               background: 'linear-gradient(135deg, #FF5A36 0%, #FFB800 100%)',
               display: 'flex',
               alignItems: 'center',
-              justify: 'center',
+              justifyContent: 'center',
               boxShadow: '0 0 20px rgba(255, 90, 54, 0.4)'
             }}
           >
@@ -548,7 +548,7 @@ export default function Home() {
               position: 'relative',
               display: 'flex',
               alignItems: 'center',
-              justify: 'center',
+              justifyContent: 'center',
               width: '44px', 
               height: '44px', 
               borderRadius: '12px',
@@ -574,7 +574,7 @@ export default function Home() {
                 fontWeight: 'bold',
                 display: 'flex',
                 alignItems: 'center',
-                justify: 'center'
+                justifyContent: 'center',
               }}>
                 {totalCartCount}
               </span>
