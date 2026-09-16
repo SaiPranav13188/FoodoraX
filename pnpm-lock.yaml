@@ -111,21 +111,9 @@ importers:
 
   apps/web:
     dependencies:
-      '@foodorax/database':
-        specifier: workspace:*
-        version: link:../../packages/database
       '@foodorax/validation':
         specifier: workspace:*
         version: link:../../packages/validation
-      '@nestjs/jwt':
-        specifier: ^10.0.3
-        version: 10.2.0(@nestjs/common@10.4.22)
-      '@nestjs/passport':
-        specifier: ^10.0.3
-        version: 10.0.3(@nestjs/common@10.4.22)(passport@0.7.0)
-      bcrypt:
-        specifier: ^5.1.1
-        version: 5.1.1
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -138,21 +126,12 @@ importers:
       openai:
         specifier: ^7.15.0
         version: 7.15.0(zod@3.25.76)
-      passport:
-        specifier: ^0.7.0
-        version: 0.7.0
-      passport-jwt:
-        specifier: ^4.0.1
-        version: 4.0.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
-      rxjs:
-        specifier: ^7.8.1
-        version: 7.8.2
       socket.io-client:
         specifier: ^4.7.5
         version: 4.8.3
@@ -166,15 +145,9 @@ importers:
         specifier: ^4.5.7
         version: 4.5.7(@types/react@18.3.31)(react@18.3.1)
     devDependencies:
-      '@types/bcrypt':
-        specifier: ^5.0.2
-        version: 5.0.2
       '@types/node':
         specifier: ^20.12.12
         version: 20.19.43
-      '@types/passport-jwt':
-        specifier: ^4.0.1
-        version: 4.0.1
       '@types/react':
         specifier: ^18.3.2
         version: 18.3.31
