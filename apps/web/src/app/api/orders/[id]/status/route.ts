@@ -1,23 +1,28 @@
-// app/api/orders/[id]/status/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@foodorax/database";
+
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://foodorax-2vgu.onrender.com";
 
 export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { status, driverId } = await request.json();
+    const body = await request.json();
+    const authHeader = request.headers.get("authorization");
 
-    const updatedOrder = await prisma.order.update({
-      where: { id: params.id },
-      data: {
-        ...(status && { status }),
-        ...(driverId !== undefined && { driverId }),
+    const res = await fetch(`${API_URL}/orders/${params.id}/status`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...(authHeader ? { Authorization: authHeader } : {}),
       },
+      body: JSON.stringify(body),
     });
 
-    return NextResponse.json(updatedOrder);
+    const data = await res.json();
+    return NextResponse.json(data, { status: res.status });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to update order status" },

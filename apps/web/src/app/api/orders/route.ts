@@ -1,35 +1,23 @@
-// app/api/orders/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@foodorax/database";
 
-export async function GET() {
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://foodorax-2vgu.onrender.com";
+
+export async function GET(request: Request) {
   try {
-    const orders = await prisma.order.findMany({
-      include: {
-        orderItems: {
-          include: {
-            menuItem: true,
-          },
-        },
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-        driver: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
+    const authHeader = request.headers.get("authorization");
+
+    const res = await fetch(`${API_URL}/orders`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(authHeader ? { Authorization: authHeader } : {}),
       },
     });
 
-    return NextResponse.json(orders);
+    const data = await res.json();
+    return NextResponse.json(data, { status: res.status });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch orders" },
