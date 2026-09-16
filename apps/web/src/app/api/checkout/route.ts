@@ -3,21 +3,22 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { items, address } = body;
+    const { items, address, totalAmount } = body;
 
+    // Validate request payload
     if (!items || items.length === 0 || !address) {
       return NextResponse.json(
-        { message: "Missing required order fields" },
+        { message: "Missing required order fields (items or address)" },
         { status: 400 }
       );
     }
 
-    // Determine backend URL from environment or fall back to live Render API
+    // Determine target backend URL
     const backendUrl =
       process.env.NEXT_PUBLIC_API_URL ||
       "https://foodorax-2vgu.onrender.com";
 
-    // Forward payload to NestJS backend /orders route
+    // Proxy the request to NestJS backend /orders endpoint
     const response = await fetch(`${backendUrl}/orders`, {
       method: "POST",
       headers: {
@@ -26,29 +27,40 @@ export async function POST(req: NextRequest) {
           ? { authorization: req.headers.get("authorization")! }
           : {}),
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        items,
+        address,
+        totalAmount,
+      }),
     });
 
-    // Safely parse JSON or fall back to text error handling
+    // Safely parse JSON or handle plain text/HTML error responses
     let data;
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
       data = await response.json();
     } else {
       const text = await response.text();
-      data = { message: text || "Backend request failed" };
+      data = { message: text || "Backend service error" };
     }
 
     if (!response.ok) {
       return NextResponse.json(
-        { message: data.message || "Failed to process checkout via API" },
+        { message: data.message || "Failed to process checkout via backend API" },
         { status: response.status }
       );
     }
 
-    return NextResponse.json(data, { status: 200 });
+    return NextResponse.json(
+      {
+        success: true,
+        orderId: data.orderId || `ORD-${Date.now()}`,
+        ...data,
+      },
+      { status: 200 }
+    );
   } catch (err: any) {
-    console.error("API ROUTE ERROR:", err);
+    console.error("CHECKOUT PROXY ERROR:", err);
     return NextResponse.json(
       { message: err.message || "Internal Server Error" },
       { status: 500 }
