@@ -4,8 +4,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "prisma generate && tsc",
-    "db:generate": "prisma generate",
+    "build": "npx prisma generate && tsc",
+    "db:generate": "npx prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "typecheck": "tsc --noEmit"
@@ -14,11 +14,11 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0"
+    "@prisma/client": "^5.22.0",
+    "prisma": "^5.22.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",
-    "prisma": "^5.22.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.2"
   }
