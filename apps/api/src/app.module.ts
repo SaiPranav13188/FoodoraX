@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthModule } from './modules/auth/auth.module'; // or AuthController/AuthService depending on your setup
+import { AuthModule } from './modules/auth/auth.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { OrdersModule } from './modules/orders/orders.module';
 import { AiController } from './modules/ai/ai.controller';
 import { AiService } from './modules/ai/ai.service';
 
@@ -11,7 +12,9 @@ import { AiService } from './modules/ai/ai.service';
       secret: process.env.JWT_SECRET || 'foodorax-secret-key',
       signOptions: { expiresIn: '1d' },
     }),
-    // Include existing modules or add controllers/providers directly
+    AuthModule,
+    PaymentModule,
+    OrdersModule,
   ],
   controllers: [AiController],
   providers: [AiService],
