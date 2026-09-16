@@ -200,6 +200,9 @@ importers:
 
   packages/validation:
     dependencies:
+      '@types/node':
+        specifier: ^20.3.1
+        version: 20.19.43
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -210,9 +213,6 @@ importers:
         specifier: ^3.22.4
         version: 3.25.76
     devDependencies:
-      '@types/node':
-        specifier: ^20.3.1
-        version: 20.19.43
       typescript:
         specifier: ^5.4.2
         version: 5.9.3
