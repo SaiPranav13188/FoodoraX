@@ -18,8 +18,8 @@ export async function POST(req: NextRequest) {
       process.env.NEXT_PUBLIC_API_URL ||
       "https://foodorax-2vgu.onrender.com";
 
-    // Proxy the request to NestJS backend /orders endpoint
-    const response = await fetch(`${backendUrl}/orders`, {
+    // ✅ Forward request to /api/orders (matches setGlobalPrefix('api') + @Controller('orders'))
+    const response = await fetch(`${backendUrl}/api/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
