@@ -1,0 +1,114 @@
+// packages/database/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleName {
+  CUSTOMER
+  RESTAURANT_OWNER
+  DRIVER
+  ADMIN
+}
+
+enum OrderStatus {
+  RECEIVED
+  PAID
+  PREPARING
+  READY_FOR_PICKUP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        RoleName @unique
+  description String?
+  users       User[]
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String?
+  isActive     Boolean  @default(true)
+  roleId       String
+  role         Role     @relation(fields: [roleId], references: [id])
+  
+  orders       Order[]  @relation("CustomerOrders")
+  deliveries   Order[]  @relation("DriverDeliveries")
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Cuisine {
+  id       String  @id @default(uuid())
+  name     String
+  slug     String  @unique
+  imageUrl String?
+}
+
+model Order {
+  id         String      @id @default(uuid())
+  
+  userId     String
+  user       User        @relation("CustomerOrders", fields: [userId], references: [id])
+  
+  driverId   String?
+  driver     User?       @relation("DriverDeliveries", fields: [driverId], references: [id])
+  
+  status     OrderStatus @default(RECEIVED)
+  total      Decimal
+  orderItems OrderItem[]
+  
+  // Relation to Rating (Optional 1-to-1)
+  rating     Rating?
+  
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model OrderItem {
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  quantity   Int
+  price      Decimal
+}
+
+model MenuItem {
+  id          String      @id @default(uuid())
+  name        String
+  price       Decimal
+  description String?
+  isVeg       Boolean     @default(false)
+  cuisine     String?
+  restaurant  String?
+  orderItems  OrderItem[]
+}
+
+model Rating {
+  id               String   @id @default(uuid())
+  orderId          String   @unique
+  order            Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  restaurantRating Int      // 1 to 5 stars for food quality/restaurant
+  restaurantReview String?
+  
+  driverRating     Int?     // 1 to 5 stars for delivery driver
+  driverReview     String?
+
+  createdAt        DateTime @default(now())
+}
