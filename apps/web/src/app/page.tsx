@@ -292,7 +292,7 @@ export default function Home() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isTrackingOpen, setIsTrackingOpen] = useState(false);
 
-  // 1. Load cart and authenticated user from localStorage on mount
+  // Load cart and authenticated user from localStorage on mount
   useEffect(() => {
     const savedCart = localStorage.getItem('food_cart');
     if (savedCart) {
@@ -315,7 +315,7 @@ export default function Home() {
     setIsLoaded(true);
   }, []);
 
-  // 2. Sync cart changes to localStorage
+  // Sync cart changes to localStorage
   useEffect(() => {
     if (isLoaded) {
       localStorage.setItem('food_cart', JSON.stringify(cartItems));
@@ -452,37 +452,174 @@ export default function Home() {
   };
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', backgroundColor: '#0D0D11', color: '#F3F4F6', padding: '24px', position: 'relative' }}>
+    <div style={{ width: '100%', minHeight: '100vh', backgroundColor: '#0D0D11', color: '#F3F4F6', padding: '16px', position: 'relative', boxSizing: 'border-box' }}>
       
       {/* Header */}
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', gap: '20px' }}>
-        <div 
-          style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
-          onClick={resetSelection}
-        >
+      <header style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div 
-            style={{ 
-              width: '44px', 
-              height: '44px', 
-              borderRadius: '12px', 
-              background: 'linear-gradient(135deg, #FF5A36 0%, #FFB800 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 0 20px rgba(255, 90, 54, 0.4)'
-            }}
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+            onClick={resetSelection}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-            </svg>
+            <div 
+              style={{ 
+                width: '40px', 
+                height: '40px', 
+                borderRadius: '12px', 
+                background: 'linear-gradient(135deg, #FF5A36 0%, #FFB800 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 0 20px rgba(255, 90, 54, 0.4)'
+              }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </div>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', letterSpacing: '-0.5px', margin: 0 }}>
+              Foodora<span style={{ color: '#FF5A36' }}>X</span>
+            </h1>
           </div>
-          <h1 style={{ fontSize: '28px', fontWeight: 'bold', letterSpacing: '-0.5px' }}>
-            Foodora<span style={{ color: '#FF5A36' }}>X</span>
-          </h1>
+
+          {/* Action Buttons Header Group */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Link
+              href="/orders"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 12px',
+                borderRadius: '12px',
+                backgroundColor: '#1E1E24',
+                border: '1px solid #2E2E38',
+                color: '#F3F4F6',
+                fontWeight: '600',
+                fontSize: '13px',
+                textDecoration: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <span>📦</span>
+              <span style={{ display: 'inline-block' }}>Orders</span>
+            </Link>
+
+            <button 
+              onClick={() => setIsCartOpen(true)}
+              style={{ 
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px', 
+                height: '40px', 
+                borderRadius: '12px',
+                backgroundColor: '#1E1E24',
+                border: '1px solid #2E2E38',
+                fontSize: '18px',
+                cursor: 'pointer',
+              }}
+              aria-label="View Cart"
+            >
+              🛍️
+              {totalCartCount > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: '-5px',
+                  right: '-5px',
+                  backgroundColor: '#FF5A36',
+                  color: '#FFF',
+                  borderRadius: '50%',
+                  width: '18px',
+                  height: '18px',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  {totalCartCount}
+                </span>
+              )}
+            </button>
+
+            <button 
+              onClick={() => setIsAiOpen(true)}
+              style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 12px',
+                borderRadius: '12px',
+                backgroundColor: '#1E1E24',
+                border: '1px solid #FFB800',
+                color: '#FFB800',
+                fontWeight: '600',
+                fontSize: '13px',
+                cursor: 'pointer',
+                boxShadow: '0 0 10px rgba(255, 184, 0, 0.15)',
+              }}
+            >
+              <span>✨</span>
+              <span>AI</span>
+            </button>
+
+            {user ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ 
+                  backgroundColor: '#1E1E24', 
+                  border: '1px solid #2E2E38', 
+                  borderRadius: '12px', 
+                  padding: '8px 10px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '6px',
+                  color: '#FFF',
+                  fontSize: '13px',
+                  fontWeight: '600'
+                }}>
+                  <span>👤</span>
+                  <span style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name || user.email}</span>
+                </div>
+                <button 
+                  onClick={handleLogout}
+                  style={{ 
+                    padding: '8px 12px',
+                    borderRadius: '12px',
+                    backgroundColor: '#2E2E38',
+                    color: '#9CA3AF',
+                    border: 'none',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => setIsAuthOpen(true)}
+                style={{ 
+                  padding: '8px 16px',
+                  borderRadius: '12px',
+                  backgroundColor: '#FFFFFF',
+                  color: '#0D0D11',
+                  border: 'none',
+                  fontWeight: 'bold',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                }}
+              >
+                Login
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Search Input Bar */}
-        <div style={{ display: 'flex', flex: 1, maxWidth: '420px', gap: '8px' }}>
+        <div style={{ display: 'flex', width: '100%', gap: '8px' }}>
           <input
             type="text"
             suppressHydrationWarning
@@ -491,173 +628,48 @@ export default function Home() {
             placeholder="Search food, dishes, or restaurants..."
             style={{
               width: '100%',
-              padding: '10px 16px',
+              padding: '12px 16px',
               backgroundColor: '#1E1E24',
               border: '1px solid #2E2E38',
-              borderRadius: '10px',
+              borderRadius: '12px',
               color: '#FFFFFF',
               outline: 'none',
               fontSize: '14px',
+              boxSizing: 'border-box'
             }}
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
               style={{
-                padding: '10px 14px',
+                padding: '12px 16px',
                 backgroundColor: '#2E2E38',
                 color: '#9CA3AF',
                 border: 'none',
-                borderRadius: '10px',
+                borderRadius: '12px',
                 cursor: 'pointer',
                 fontSize: '14px',
+                whiteSpace: 'nowrap'
               }}
             >
               Clear
             </button>
           )}
         </div>
-
-        {/* Action Buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* Your Orders Navigation Link */}
-          <Link
-            href="/orders"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 16px',
-              borderRadius: '12px',
-              backgroundColor: '#1E1E24',
-              border: '1px solid #2E2E38',
-              color: '#F3F4F6',
-              fontWeight: '600',
-              fontSize: '14px',
-              textDecoration: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            <span>📦</span>
-            <span>Your Orders</span>
-          </Link>
-
-          <button 
-            onClick={() => setIsCartOpen(true)}
-            style={{ 
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '44px', 
-              height: '44px', 
-              borderRadius: '12px',
-              backgroundColor: '#1E1E24',
-              border: '1px solid #2E2E38',
-              fontSize: '20px',
-              cursor: 'pointer',
-            }}
-            aria-label="View Cart"
-          >
-            🛍️
-            {totalCartCount > 0 && (
-              <span style={{
-                position: 'absolute',
-                top: '-5px',
-                right: '-5px',
-                backgroundColor: '#FF5A36',
-                color: '#FFF',
-                borderRadius: '50%',
-                width: '20px',
-                height: '20px',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                {totalCartCount}
-              </span>
-            )}
-          </button>
-
-          <button 
-            onClick={() => setIsAiOpen(true)}
-            style={{ 
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 16px',
-              borderRadius: '12px',
-              backgroundColor: '#1E1E24',
-              border: '1px solid #FFB800',
-              color: '#FFB800',
-              fontWeight: '600',
-              fontSize: '14px',
-              cursor: 'pointer',
-              boxShadow: '0 0 10px rgba(255, 184, 0, 0.15)',
-            }}
-          >
-            <span>✨</span>
-            <span>AI Assistant</span>
-          </button>
-
-          {/* Dynamic Authentication Button */}
-          {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ 
-                backgroundColor: '#1E1E24', 
-                border: '1px solid #2E2E38', 
-                borderRadius: '12px', 
-                padding: '8px 14px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '8px',
-                color: '#FFF',
-                fontSize: '14px',
-                fontWeight: '600'
-              }}>
-                <span>👤</span>
-                <span>{user.name || user.email}</span>
-              </div>
-              <button 
-                onClick={handleLogout}
-                style={{ 
-                  padding: '10px 16px',
-                  borderRadius: '12px',
-                  backgroundColor: '#2E2E38',
-                  color: '#9CA3AF',
-                  border: 'none',
-                  fontWeight: 'bold',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                }}
-              >
-                Logout
-              </button>
-            </div>
-          ) : (
-            <button 
-              onClick={() => setIsAuthOpen(true)}
-              style={{ 
-                padding: '10px 20px',
-                borderRadius: '12px',
-                backgroundColor: '#FFFFFF',
-                color: '#0D0D11',
-                border: 'none',
-                fontWeight: 'bold',
-                fontSize: '14px',
-                cursor: 'pointer',
-              }}
-            >
-              Login
-            </button>
-          )}
-        </div>
       </header>
 
       {/* Filter Bar */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', overflowX: 'auto', paddingBottom: '4px' }}>
+      <div style={{ 
+        display: 'flex', 
+        gap: '10px', 
+        marginBottom: '24px', 
+        overflowX: 'auto', 
+        paddingBottom: '8px',
+        whiteSpace: 'nowrap',
+        scrollbarWidth: 'thin',
+        msOverflowStyle: 'none',
+        WebkitOverflowScrolling: 'touch'
+      }}>
         {FILTER_OPTIONS.map((filter, index) => {
           const isActive = activeFilter === filter;
           return (
@@ -665,19 +677,21 @@ export default function Home() {
               key={index} 
               onClick={() => handleFilterClick(filter)}
               style={{ 
-                padding: '8px 16px', 
+                padding: '10px 18px', 
                 borderRadius: '20px', 
                 backgroundColor: isActive ? '#FF5A36' : '#1E1E24', 
                 border: `1px solid ${isActive ? '#FF5A36' : '#2E2E38'}`, 
                 color: '#fff', 
                 fontSize: '13px', 
-                fontWeight: isActive ? 'bold' : 'normal',
+                fontWeight: isActive ? 'bold' : '500',
                 cursor: 'pointer', 
                 whiteSpace: 'nowrap',
-                transition: 'all 0.2s ease'
+                flexShrink: 0,
+                transition: 'all 0.2s ease',
+                boxShadow: isActive ? '0 0 12px rgba(255, 90, 54, 0.3)' : 'none'
               }}
             >
-              {filter} {isActive && '✕'}
+              {filter} {isActive && ' ✕'}
             </button>
           );
         })}
@@ -685,7 +699,7 @@ export default function Home() {
 
       {/* Breadcrumb Navigation */}
       {(selectedCuisine || selectedRestaurant || activeFilter || searchQuery) && (
-        <div style={{ marginBottom: '20px', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '14px', color: '#9CA3AF' }}>
+        <div style={{ marginBottom: '20px', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '14px', color: '#9CA3AF', flexWrap: 'wrap' }}>
           <span 
             style={{ cursor: 'pointer', color: '#FF5A36', fontWeight: 'bold' }} 
             onClick={resetSelection}
@@ -741,7 +755,7 @@ export default function Home() {
               {searchResults.matchedRestaurants.length > 0 && (
                 <div>
                   <h4 style={{ fontSize: '18px', color: '#FFB800', marginBottom: '12px' }}>Matching Restaurants</h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
                     {searchResults.matchedRestaurants.map(({ cuisineName, restaurant }) => (
                       <div 
                         key={restaurant.id} 
@@ -751,23 +765,23 @@ export default function Home() {
                         }}
                         style={{ backgroundColor: '#1E1E24', borderRadius: '16px', overflow: 'hidden', border: '1px solid #2E2E38', display: 'flex', gap: '16px', padding: '16px', cursor: 'pointer' }}
                       >
-                        <div style={{ width: '140px', height: '120px', position: 'relative', flexShrink: 0 }}>
+                        <div style={{ width: '100px', height: '100px', position: 'relative', flexShrink: 0 }}>
                           <img src={restaurant.image} alt={restaurant.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
-                          <span style={{ position: 'absolute', top: '8px', left: '8px', backgroundColor: '#FF5A36', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px' }}>
+                          <span style={{ position: 'absolute', top: '6px', left: '6px', backgroundColor: '#FF5A36', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '4px' }}>
                             {cuisineName}
                           </span>
                         </div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                            <h4 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>{restaurant.name}</h4>
-                            <span style={{ color: '#FFB800', fontWeight: 'bold', fontSize: '14px' }}>{restaurant.rating}</span>
+                            <h4 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>{restaurant.name}</h4>
+                            <span style={{ color: '#FFB800', fontWeight: 'bold', fontSize: '13px' }}>{restaurant.rating}</span>
                           </div>
-                          <div style={{ display: 'flex', gap: '12px', color: '#9CA3AF', fontSize: '13px', marginBottom: '12px' }}>
+                          <div style={{ display: 'flex', gap: '8px', color: '#9CA3AF', fontSize: '12px', marginBottom: '8px' }}>
                             <span>⏱️ {restaurant.time}</span>
                             <span>•</span>
                             <span>{restaurant.price}</span>
                           </div>
-                          <span style={{ color: '#FF5A36', fontSize: '13px', fontWeight: 'bold' }}>View Menu →</span>
+                          <span style={{ color: '#FF5A36', fontSize: '12px', fontWeight: 'bold' }}>View Menu →</span>
                         </div>
                       </div>
                     ))}
@@ -778,10 +792,10 @@ export default function Home() {
               {searchResults.matchedItems.length > 0 && (
                 <div>
                   <h4 style={{ fontSize: '18px', color: '#FFB800', marginBottom: '12px' }}>Matching Menu Dishes</h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '18px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '18px' }}>
                     {searchResults.matchedItems.map(({ cuisineName, restaurantName, item }) => (
-                      <div key={item.id} style={{ backgroundColor: '#1E1E24', borderRadius: '16px', padding: '18px', border: '1px solid #2E2E38', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
-                        <div style={{ flex: 1 }}>
+                      <div key={item.id} style={{ backgroundColor: '#1E1E24', borderRadius: '16px', padding: '18px', border: '1px solid #2E2E38', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '12px' }}>
+                        <div>
                           <div style={{ display: 'flex', gap: '6px', marginBottom: '6px', fontSize: '11px', color: '#FFB800' }}>
                             <span>{cuisineName}</span>
                             <span>•</span>
@@ -803,26 +817,28 @@ export default function Home() {
                             <h5 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: '#FFF' }}>{item.name}</h5>
                           </div>
                           <p style={{ color: '#9CA3AF', fontSize: '12px', margin: '0 0 10px 0', lineHeight: '1.4' }}>{item.description}</p>
-                          <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFB800' }}>${item.price.toFixed(2)}</span>
                         </div>
 
-                        <button 
-                          onClick={() => handleAddToCart({ ...item, restaurantName })}
-                          style={{ 
-                            padding: '10px 16px', 
-                            backgroundColor: '#FF5A36', 
-                            color: '#FFF', 
-                            border: 'none', 
-                            borderRadius: '10px', 
-                            fontWeight: 'bold', 
-                            fontSize: '13px',
-                            cursor: 'pointer',
-                            whiteSpace: 'nowrap',
-                            boxShadow: '0 0 10px rgba(255, 90, 54, 0.3)'
-                          }}
-                        >
-                          + Add to Cart
-                        </button>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                          <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFB800' }}>${item.price.toFixed(2)}</span>
+                          <button 
+                            onClick={() => handleAddToCart({ ...item, restaurantName })}
+                            style={{ 
+                              padding: '8px 14px', 
+                              backgroundColor: '#FF5A36', 
+                              color: '#FFF', 
+                              border: 'none', 
+                              borderRadius: '10px', 
+                              fontWeight: 'bold', 
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap',
+                              boxShadow: '0 0 10px rgba(255, 90, 54, 0.3)'
+                            }}
+                          >
+                            + Add to Cart
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -840,30 +856,30 @@ export default function Home() {
             <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF' }}>{activeFilter} Restaurants across Cuisines</h3>
             <p style={{ color: '#9CA3AF', fontSize: '14px', margin: '4px 0 0 0' }}>Showing all matching restaurants across all cuisines</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
             {getFilteredRestaurants().map(({ cuisineName, restaurant }) => (
               <div 
                 key={restaurant.id} 
                 onClick={() => { setSelectedRestaurant(restaurant); setActiveFilter(null); }}
                 style={{ backgroundColor: '#1E1E24', borderRadius: '16px', overflow: 'hidden', border: '1px solid #2E2E38', display: 'flex', gap: '16px', padding: '16px', cursor: 'pointer' }}
               >
-                <div style={{ width: '140px', height: '120px', position: 'relative', flexShrink: 0 }}>
+                <div style={{ width: '100px', height: '100px', position: 'relative', flexShrink: 0 }}>
                   <img src={restaurant.image} alt={restaurant.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
-                  <span style={{ position: 'absolute', top: '8px', left: '8px', backgroundColor: '#FF5A36', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px' }}>
+                  <span style={{ position: 'absolute', top: '6px', left: '6px', backgroundColor: '#FF5A36', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '4px' }}>
                     {cuisineName}
                   </span>
                 </div>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <h4 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>{restaurant.name}</h4>
-                    <span style={{ color: '#FFB800', fontWeight: 'bold', fontSize: '14px' }}>{restaurant.rating}</span>
+                    <h4 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>{restaurant.name}</h4>
+                    <span style={{ color: '#FFB800', fontWeight: 'bold', fontSize: '13px' }}>{restaurant.rating}</span>
                   </div>
-                  <div style={{ display: 'flex', gap: '12px', color: '#9CA3AF', fontSize: '13px', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', gap: '8px', color: '#9CA3AF', fontSize: '12px', marginBottom: '8px' }}>
                     <span>⏱️ {restaurant.time}</span>
                     <span>•</span>
                     <span>{restaurant.price}</span>
                   </div>
-                  <span style={{ color: '#FF5A36', fontSize: '13px', fontWeight: 'bold' }}>View Menu →</span>
+                  <span style={{ color: '#FF5A36', fontSize: '12px', fontWeight: 'bold' }}>View Menu →</span>
                 </div>
               </div>
             ))}
@@ -878,10 +894,10 @@ export default function Home() {
             <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF' }}>{activeFilter} Items across Cuisines</h3>
             <p style={{ color: '#9CA3AF', fontSize: '14px', margin: '4px 0 0 0' }}>Showing all matching menu items from every restaurant</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '18px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '18px' }}>
             {getFilteredMenuItems().map(({ cuisineName, restaurantName, item }) => (
-              <div key={item.id} style={{ backgroundColor: '#1E1E24', borderRadius: '16px', padding: '18px', border: '1px solid #2E2E38', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
-                <div style={{ flex: 1 }}>
+              <div key={item.id} style={{ backgroundColor: '#1E1E24', borderRadius: '16px', padding: '18px', border: '1px solid #2E2E38', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '12px' }}>
+                <div>
                   <div style={{ display: 'flex', gap: '6px', marginBottom: '6px', fontSize: '11px', color: '#FFB800' }}>
                     <span>{cuisineName}</span>
                     <span>•</span>
@@ -903,26 +919,28 @@ export default function Home() {
                     <h5 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: '#FFF' }}>{item.name}</h5>
                   </div>
                   <p style={{ color: '#9CA3AF', fontSize: '12px', margin: '0 0 10px 0', lineHeight: '1.4' }}>{item.description}</p>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFB800' }}>${item.price.toFixed(2)}</span>
                 </div>
 
-                <button 
-                  onClick={() => handleAddToCart({ ...item, restaurantName })}
-                  style={{ 
-                    padding: '10px 16px', 
-                    backgroundColor: '#FF5A36', 
-                    color: '#FFF', 
-                    border: 'none', 
-                    borderRadius: '10px', 
-                    fontWeight: 'bold', 
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    boxShadow: '0 0 10px rgba(255, 90, 54, 0.3)'
-                  }}
-                >
-                  + Add to Cart
-                </button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFB800' }}>${item.price.toFixed(2)}</span>
+                  <button 
+                    onClick={() => handleAddToCart({ ...item, restaurantName })}
+                    style={{ 
+                      padding: '8px 14px', 
+                      backgroundColor: '#FF5A36', 
+                      color: '#FFF', 
+                      border: 'none', 
+                      borderRadius: '10px', 
+                      fontWeight: 'bold', 
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      boxShadow: '0 0 10px rgba(255, 90, 54, 0.3)'
+                    }}
+                  >
+                    + Add to Cart
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -933,19 +951,65 @@ export default function Home() {
       {!searchQuery && !activeFilter && !selectedCuisine && !selectedRestaurant && (
         <section style={{ width: '100%', marginBottom: '40px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-            <span>🧭</span>
-            <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF' }}>Explore Cuisines</h3>
+            <span style={{ fontSize: '20px' }}>🧭</span>
+            <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF', margin: 0 }}>Explore Cuisines</h3>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '18px', width: '100%' }}>
+          
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
+            gap: '16px', 
+            width: '100%' 
+          }}>
             {CUISINES_DATA.map((cuisine) => (
               <div 
                 key={cuisine.id} 
                 onClick={() => setSelectedCuisine(cuisine)}
-                style={{ height: '220px', position: 'relative', borderRadius: '16px', overflow: 'hidden', border: '1px solid #2E2E38', backgroundColor: '#1E1E24', cursor: 'pointer' }}
+                style={{ 
+                  height: '180px', 
+                  position: 'relative', 
+                  borderRadius: '16px', 
+                  overflow: 'hidden', 
+                  border: '1px solid #2E2E38', 
+                  backgroundColor: '#1E1E24', 
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s ease, border-color 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.borderColor = '#FF5A36';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.borderColor = '#2E2E38';
+                }}
               >
-                <img src={cuisine.image} alt={cuisine.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(13,13,17,0.85) 100%)' }}>
-                  <span style={{ color: '#FFFFFF', backgroundColor: 'rgba(13, 13, 17, 0.85)', border: '1px solid rgba(255, 255, 255, 0.1)', padding: '6px 16px', borderRadius: '10px', fontWeight: 'bold' }}>
+                <img 
+                  src={cuisine.image} 
+                  alt={cuisine.name} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
+                <div style={{ 
+                  position: 'absolute', 
+                  inset: 0, 
+                  display: 'flex', 
+                  alignItems: 'flex-end', 
+                  justifyContent: 'center', 
+                  padding: '12px',
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0) 20%, rgba(13,13,17,0.9) 100%)' 
+                }}>
+                  <span style={{ 
+                    color: '#FFFFFF', 
+                    backgroundColor: 'rgba(30, 30, 36, 0.85)', 
+                    backdropFilter: 'blur(4px)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)', 
+                    padding: '6px 14px', 
+                    borderRadius: '20px', 
+                    fontWeight: 'bold',
+                    fontSize: '13px',
+                    textAlign: 'center',
+                    width: '100%'
+                  }}>
                     {cuisine.name}
                   </span>
                 </div>
@@ -962,30 +1026,30 @@ export default function Home() {
             <span>🔥</span>
             <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF' }}>10 Best {selectedCuisine.name} Restaurants</h3>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
             {selectedCuisine.restaurants.map((resto) => (
               <div 
                 key={resto.id} 
                 onClick={() => setSelectedRestaurant(resto)}
                 style={{ backgroundColor: '#1E1E24', borderRadius: '16px', overflow: 'hidden', border: '1px solid #2E2E38', display: 'flex', gap: '16px', padding: '16px', cursor: 'pointer' }}
               >
-                <div style={{ width: '140px', height: '120px', position: 'relative', flexShrink: 0 }}>
+                <div style={{ width: '100px', height: '100px', position: 'relative', flexShrink: 0 }}>
                   <img src={resto.image} alt={resto.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
-                  <span style={{ position: 'absolute', top: '8px', left: '8px', backgroundColor: '#FF5A36', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px' }}>
+                  <span style={{ position: 'absolute', top: '6px', left: '6px', backgroundColor: '#FF5A36', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '4px' }}>
                     {resto.badge}
                   </span>
                 </div>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <h4 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>{resto.name}</h4>
-                    <span style={{ color: '#FFB800', fontWeight: 'bold', fontSize: '14px' }}>{resto.rating}</span>
+                    <h4 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>{resto.name}</h4>
+                    <span style={{ color: '#FFB800', fontWeight: 'bold', fontSize: '13px' }}>{resto.rating}</span>
                   </div>
-                  <div style={{ display: 'flex', gap: '12px', color: '#9CA3AF', fontSize: '13px', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', gap: '8px', color: '#9CA3AF', fontSize: '12px', marginBottom: '8px' }}>
                     <span>⏱️ {resto.time}</span>
                     <span>•</span>
                     <span>{resto.price}</span>
                   </div>
-                  <span style={{ color: '#FF5A36', fontSize: '13px', fontWeight: 'bold' }}>View Menu →</span>
+                  <span style={{ color: '#FF5A36', fontSize: '12px', fontWeight: 'bold' }}>View Menu →</span>
                 </div>
               </div>
             ))}
@@ -1001,10 +1065,10 @@ export default function Home() {
             <p style={{ color: '#9CA3AF', margin: 0, fontSize: '14px' }}>Select from our fresh culinary choices below:</p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '18px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '18px' }}>
             {selectedRestaurant.menu.map((item) => (
-              <div key={item.id} style={{ backgroundColor: '#1E1E24', borderRadius: '16px', padding: '18px', border: '1px solid #2E2E38', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
-                <div style={{ flex: 1 }}>
+              <div key={item.id} style={{ backgroundColor: '#1E1E24', borderRadius: '16px', padding: '18px', border: '1px solid #2E2E38', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '12px' }}>
+                <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                     <div style={{ 
                       width: '16px', 
@@ -1022,26 +1086,28 @@ export default function Home() {
                   </div>
                   
                   <p style={{ color: '#9CA3AF', fontSize: '12px', margin: '0 0 10px 0', lineHeight: '1.4' }}>{item.description}</p>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFB800' }}>${item.price.toFixed(2)}</span>
                 </div>
 
-                <button 
-                  onClick={() => handleAddToCart({ ...item, restaurantName: selectedRestaurant.name })}
-                  style={{ 
-                    padding: '10px 16px', 
-                    backgroundColor: '#FF5A36', 
-                    color: '#FFF', 
-                    border: 'none', 
-                    borderRadius: '10px', 
-                    fontWeight: 'bold', 
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    boxShadow: '0 0 10px rgba(255, 90, 54, 0.3)'
-                  }}
-                >
-                  + Add to Cart
-                </button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFB800' }}>${item.price.toFixed(2)}</span>
+                  <button 
+                    onClick={() => handleAddToCart({ ...item, restaurantName: selectedRestaurant.name })}
+                    style={{ 
+                      padding: '8px 14px', 
+                      backgroundColor: '#FF5A36', 
+                      color: '#FFF', 
+                      border: 'none', 
+                      borderRadius: '10px', 
+                      fontWeight: 'bold', 
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      boxShadow: '0 0 10px rgba(255, 90, 54, 0.3)'
+                    }}
+                  >
+                    + Add to Cart
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -1051,7 +1117,7 @@ export default function Home() {
       {/* Dynamic Cart Drawer */}
       {isCartOpen && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'flex-end', zIndex: 100 }}>
-          <div style={{ width: '380px', height: '100%', backgroundColor: '#1E1E24', borderLeft: '1px solid #2E2E38', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div style={{ width: '100%', maxWidth: '380px', height: '100%', backgroundColor: '#1E1E24', borderLeft: '1px solid #2E2E38', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <h3 style={{ fontSize: '20px', fontWeight: 'bold' }}>Your Cart ({totalCartCount})</h3>
@@ -1065,7 +1131,7 @@ export default function Home() {
                   <p style={{ margin: '8px 0 0 0', fontSize: '13px' }}>Add items from a restaurant to get started.</p>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '65vh', overflowY: 'auto', paddingRight: '4px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '60vh', overflowY: 'auto', paddingRight: '4px' }}>
                   {cartItems.map((item) => (
                     <div key={item.id} style={{ backgroundColor: '#0D0D11', borderRadius: '12px', padding: '12px', border: '1px solid #2E2E38' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
