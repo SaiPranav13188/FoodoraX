@@ -282,6 +282,7 @@ export default function Home() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isNavMenuOpen, setIsNavMenuOpen] = useState(false);
 
   // Authentication User State
   const [user, setUser] = useState<any>(null);
@@ -454,9 +455,9 @@ export default function Home() {
   return (
     <div style={{ width: '100%', minHeight: '100vh', backgroundColor: '#0D0D11', color: '#F3F4F6', padding: '16px', position: 'relative', boxSizing: 'border-box' }}>
       
-      {/* Header */}
-      <header style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+      {/* Header Navigation Bar */}
+      <header className="relative mb-6">
+        <div className="flex items-center justify-between">
           <div 
             style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
             onClick={resetSelection}
@@ -483,28 +484,8 @@ export default function Home() {
           </div>
 
           {/* Action Buttons Header Group */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Link
-              href="/orders"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 12px',
-                borderRadius: '12px',
-                backgroundColor: '#1E1E24',
-                border: '1px solid #2E2E38',
-                color: '#F3F4F6',
-                fontWeight: '600',
-                fontSize: '13px',
-                textDecoration: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <span>📦</span>
-              <span style={{ display: 'inline-block' }}>Orders</span>
-            </Link>
-
+          <div className="flex items-center gap-2">
+            {/* Always visible Cart button */}
             <button 
               onClick={() => setIsCartOpen(true)}
               style={{ 
@@ -544,82 +525,127 @@ export default function Home() {
               )}
             </button>
 
-            <button 
-              onClick={() => setIsAiOpen(true)}
-              style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 12px',
-                borderRadius: '12px',
-                backgroundColor: '#1E1E24',
-                border: '1px solid #FFB800',
-                color: '#FFB800',
-                fontWeight: '600',
-                fontSize: '13px',
-                cursor: 'pointer',
-                boxShadow: '0 0 10px rgba(255, 184, 0, 0.15)',
-              }}
+            {/* Responsive Actions Menu (Desktop side-by-side, Mobile dropdown drawer) */}
+            <div 
+              className={`
+                ${isNavMenuOpen ? 'flex' : 'hidden'} 
+                md:flex flex-col md:flex-row absolute md:relative 
+                top-14 md:top-auto right-0 md:right-auto 
+                bg-[#1E1E24] md:bg-transparent p-4 md:p-0 
+                rounded-2xl md:rounded-none border border-[#2E2E38] md:border-none 
+                gap-2 z-50 shadow-2xl md:shadow-none min-w-[180px] md:min-w-0
+              `}
             >
-              <span>✨</span>
-              <span>AI</span>
-            </button>
-
-            {user ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <div style={{ 
-                  backgroundColor: '#1E1E24', 
-                  border: '1px solid #2E2E38', 
-                  borderRadius: '12px', 
-                  padding: '8px 10px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
+              <Link
+                href="/orders"
+                onClick={() => setIsNavMenuOpen(false)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
                   gap: '6px',
-                  color: '#FFF',
-                  fontSize: '13px',
-                  fontWeight: '600'
-                }}>
-                  <span>👤</span>
-                  <span style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name || user.email}</span>
-                </div>
-                <button 
-                  onClick={handleLogout}
-                  style={{ 
-                    padding: '8px 12px',
-                    borderRadius: '12px',
-                    backgroundColor: '#2E2E38',
-                    color: '#9CA3AF',
-                    border: 'none',
-                    fontWeight: 'bold',
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <button 
-                onClick={() => setIsAuthOpen(true)}
-                style={{ 
-                  padding: '8px 16px',
+                  padding: '8px 12px',
                   borderRadius: '12px',
-                  backgroundColor: '#FFFFFF',
-                  color: '#0D0D11',
-                  border: 'none',
-                  fontWeight: 'bold',
+                  backgroundColor: '#1E1E24',
+                  border: '1px solid #2E2E38',
+                  color: '#F3F4F6',
+                  fontWeight: '600',
                   fontSize: '13px',
+                  textDecoration: 'none',
                   cursor: 'pointer',
                 }}
               >
-                Login
+                <span>📦</span>
+                <span>Orders</span>
+              </Link>
+
+              <button 
+                onClick={() => { setIsAiOpen(true); setIsNavMenuOpen(false); }}
+                style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 12px',
+                  borderRadius: '12px',
+                  backgroundColor: '#1E1E24',
+                  border: '1px solid #FFB800',
+                  color: '#FFB800',
+                  fontWeight: '600',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  boxShadow: '0 0 10px rgba(255, 184, 0, 0.15)',
+                }}
+              >
+                <span>✨</span>
+                <span>AI</span>
               </button>
-            )}
+
+              {user ? (
+                <div className="flex flex-col md:flex-row gap-2">
+                  <div style={{ 
+                    backgroundColor: '#1E1E24', 
+                    border: '1px solid #2E2E38', 
+                    borderRadius: '12px', 
+                    padding: '8px 10px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '6px',
+                    color: '#FFF',
+                    fontSize: '13px',
+                    fontWeight: '600'
+                  }}>
+                    <span>👤</span>
+                    <span style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name || user.email}</span>
+                  </div>
+                  <button 
+                    onClick={() => { handleLogout(); setIsNavMenuOpen(false); }}
+                    style={{ 
+                      padding: '8px 12px',
+                      borderRadius: '12px',
+                      backgroundColor: '#2E2E38',
+                      color: '#9CA3AF',
+                      border: 'none',
+                      fontWeight: 'bold',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => { setIsAuthOpen(true); setIsNavMenuOpen(false); }}
+                  style={{ 
+                    padding: '8px 16px',
+                    borderRadius: '12px',
+                    backgroundColor: '#FFFFFF',
+                    color: '#0D0D11',
+                    border: 'none',
+                    fontWeight: 'bold',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Login
+                </button>
+              )}
+            </div>
+
+            {/* Hamburger Toggle Button for Mobile Screens */}
+            <button
+              onClick={() => setIsNavMenuOpen(!isNavMenuOpen)}
+              className="md:hidden flex flex-col justify-between w-8 h-8 p-1.5 bg-[#1E1E24] rounded-lg border border-[#2E2E38] cursor-pointer focus:outline-none"
+              aria-label="Toggle navigation menu"
+            >
+              <span className="w-full h-0.5 bg-white rounded-sm"></span>
+              <span className="w-full h-0.5 bg-white rounded-sm"></span>
+              <span className="w-full h-0.5 bg-white rounded-sm"></span>
+            </button>
           </div>
         </div>
 
         {/* Search Input Bar */}
-        <div style={{ display: 'flex', width: '100%', gap: '8px' }}>
+        <div style={{ display: 'flex', width: '100%', gap: '8px', marginTop: '16px' }}>
           <input
             type="text"
             suppressHydrationWarning
