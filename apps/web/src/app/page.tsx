@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuthModal from '@/components/AuthModal';
@@ -397,6 +397,182 @@ function QuantityBouncer({ quantity, onIncrement, onDecrement }: { quantity: num
   );
 }
 
+// --- VOICE SEARCH BAR COMPONENT ---
+function VoiceSearchBar({ searchQuery, setSearchQuery }: { searchQuery: string; setSearchQuery: (q: string) => void }) {
+  const [isListening, setIsListening] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => {
+          setIsListening(true);
+          setErrorMsg(null);
+        };
+
+        recognition.onresult = (event: any) => {
+          let currentTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            currentTranscript += event.results[i][0].transcript;
+          }
+          setSearchQuery(currentTranscript);
+        };
+
+        recognition.onerror = (event: any) => {
+          console.error('Speech recognition error:', event.error);
+          setIsListening(false);
+          if (event.error === 'not-allowed') {
+            setErrorMsg('Microphone access denied.');
+          } else if (event.error === 'no-speech') {
+            setErrorMsg('No speech detected. Please try again.');
+          } else {
+            setErrorMsg('Voice search failed.');
+          }
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+
+        recognitionRef.current = recognition;
+      }
+    }
+  }, [setSearchQuery]);
+
+  const toggleVoiceSearch = () => {
+    setErrorMsg(null);
+    if (!recognitionRef.current) {
+      alert('Voice search is not supported on this browser. Please try Chrome, Edge, or Safari.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      try {
+        recognitionRef.current.start();
+      } catch (e) {
+        recognitionRef.current.stop();
+        setTimeout(() => {
+          recognitionRef.current.start();
+        }, 200);
+      }
+    }
+  };
+
+  return (
+    <div style={{ width: '100%', marginTop: '16px' }}>
+      <div style={{ display: 'flex', width: '100%', gap: '8px', position: 'relative' }}>
+        <div style={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center' }}>
+          <input
+            type="text"
+            suppressHydrationWarning
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={isListening ? "Listening... Speak now!" : "Search food, dishes, or restaurants..."}
+            style={{
+              width: '100%',
+              padding: '12px 48px 12px 16px',
+              backgroundColor: '#1E1E24',
+              border: isListening ? '1px solid #FF5A36' : '1px solid #2E2E38',
+              borderRadius: '12px',
+              color: '#FFFFFF',
+              outline: 'none',
+              fontSize: '14px',
+              boxSizing: 'border-box',
+              transition: 'border 0.2s ease, box-shadow 0.2s ease',
+              boxShadow: isListening ? '0 0 12px rgba(255, 90, 54, 0.3)' : 'none'
+            }}
+          />
+
+          {/* Voice Search Mic Button inside input */}
+          <motion.button
+            whileTap={{ scale: 0.85 }}
+            onClick={toggleVoiceSearch}
+            type="button"
+            aria-label="Voice Search"
+            style={{
+              position: 'absolute',
+              right: '12px',
+              backgroundColor: isListening ? '#FF5A36' : 'transparent',
+              border: 'none',
+              borderRadius: '50%',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: isListening ? '#FFF' : '#9CA3AF',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            {isListening ? (
+              <motion.div
+                animate={{ scale: [1, 1.25, 1] }}
+                transition={{ repeat: Infinity, duration: 1 }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                  <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                </svg>
+              </motion.div>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+              </svg>
+            )}
+          </motion.button>
+        </div>
+
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            style={{
+              padding: '12px 16px',
+              backgroundColor: '#2E2E38',
+              color: '#9CA3AF',
+              border: 'none',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {/* Voice Status or Error Indicators */}
+      {isListening && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', fontSize: '12px', color: '#FF5A36' }}>
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+          </span>
+          Listening... Say something like &quot;Pizza&quot; or &quot;Sushi&quot;
+        </div>
+      )}
+
+      {errorMsg && (
+        <div style={{ marginTop: '6px', fontSize: '12px', color: '#EF4444' }}>
+          ⚠️ {errorMsg}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Home() {
   const [selectedCuisine, setSelectedCuisine] = useState<Cuisine | null>(null);
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
@@ -781,44 +957,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Search Input Bar */}
-        <div style={{ display: 'flex', width: '100%', gap: '8px', marginTop: '16px' }}>
-          <input
-            type="text"
-            suppressHydrationWarning
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search food, dishes, or restaurants..."
-            style={{
-              width: '100%',
-              padding: '12px 16px',
-              backgroundColor: '#1E1E24',
-              border: '1px solid #2E2E38',
-              borderRadius: '12px',
-              color: '#FFFFFF',
-              outline: 'none',
-              fontSize: '14px',
-              boxSizing: 'border-box'
-            }}
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              style={{
-                padding: '12px 16px',
-                backgroundColor: '#2E2E38',
-                color: '#9CA3AF',
-                border: 'none',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              Clear
-            </button>
-          )}
-        </div>
+        {/* Voice Search Bar Component Integrated Here */}
+        <VoiceSearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       </header>
 
       {/* Filter Bar */}
