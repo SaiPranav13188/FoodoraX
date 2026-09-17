@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import AuthModal from '@/components/AuthModal';
 import { AiAssistantModal } from '@/components/AiModal';
 import { CheckoutModal } from '@/components/CheckoutModal';
@@ -349,6 +350,53 @@ const FILTER_OPTIONS = [
   '💳 Under $15'
 ];
 
+// --- ANIMATED SKELETON LOADER COMPONENT ---
+function SkeletonCard() {
+  return (
+    <div style={{ backgroundColor: '#1E1E24', borderRadius: '16px', border: '1px solid #2E2E38', padding: '16px', display: 'flex', gap: '16px', width: '100%' }}>
+      <div className="animate-pulse" style={{ width: '100px', height: '100px', backgroundColor: '#2E2E38', borderRadius: '12px', flexShrink: 0 }} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center' }}>
+        <div className="animate-pulse" style={{ height: '18px', width: '70%', backgroundColor: '#2E2E38', borderRadius: '4px' }} />
+        <div className="animate-pulse" style={{ height: '14px', width: '40%', backgroundColor: '#2E2E38', borderRadius: '4px' }} />
+        <div className="animate-pulse" style={{ height: '14px', width: '90%', backgroundColor: '#2E2E38', borderRadius: '4px' }} />
+      </div>
+    </div>
+  );
+}
+
+// --- INTERACTIVE QUANTITY BOUNCER COMPONENT ---
+function QuantityBouncer({ quantity, onIncrement, onDecrement }: { quantity: number; onIncrement: () => void; onDecrement: () => void }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#1E1E24', borderRadius: '6px', padding: '2px 8px' }}>
+      <motion.button
+        whileTap={{ scale: 0.75 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+        onClick={onDecrement}
+        style={{ backgroundColor: 'transparent', border: 'none', color: '#FFF', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}
+      >
+        -
+      </motion.button>
+      <motion.span
+        key={quantity}
+        initial={{ scale: 1.4, opacity: 0.5 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+        style={{ fontSize: '13px', fontWeight: 'bold', display: 'inline-block', minWidth: '16px', textAlign: 'center' }}
+      >
+        {quantity}
+      </motion.span>
+      <motion.button
+        whileTap={{ scale: 0.75 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+        onClick={onIncrement}
+        style={{ backgroundColor: 'transparent', border: 'none', color: '#FFF', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}
+      >
+        +
+      </motion.button>
+    </div>
+  );
+}
+
 export default function Home() {
   const [selectedCuisine, setSelectedCuisine] = useState<Cuisine | null>(null);
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
@@ -391,7 +439,12 @@ export default function Home() {
       }
     }
 
-    setIsLoaded(true);
+    // Simulate realistic initial loading state
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 600);
+
+    return () => clearTimeout(timer);
   }, []);
 
   // Sync cart changes to localStorage
@@ -563,8 +616,9 @@ export default function Home() {
 
           {/* Action Buttons Header Group */}
           <div className="flex items-center gap-2">
-            {/* Always visible Cart button */}
-            <button 
+            {/* Always visible Cart button with bouncy animation */}
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
               onClick={() => setIsCartOpen(true)}
               style={{ 
                 position: 'relative',
@@ -583,25 +637,30 @@ export default function Home() {
             >
               🛍️
               {totalCartCount > 0 && (
-                <span style={{
-                  position: 'absolute',
-                  top: '-5px',
-                  right: '-5px',
-                  backgroundColor: '#FF5A36',
-                  color: '#FFF',
-                  borderRadius: '50%',
-                  width: '18px',
-                  height: '18px',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
+                <motion.span 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                  style={{
+                    position: 'absolute',
+                    top: '-5px',
+                    right: '-5px',
+                    backgroundColor: '#FF5A36',
+                    color: '#FFF',
+                    borderRadius: '50%',
+                    width: '18px',
+                    height: '18px',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
                   {totalCartCount}
-                </span>
+                </motion.span>
               )}
-            </button>
+            </motion.button>
 
             {/* Responsive Actions Menu (Desktop side-by-side, Mobile dropdown drawer) */}
             <div 
@@ -842,614 +901,646 @@ export default function Home() {
         </div>
       )}
 
-      {/* Search Results Display */}
-      {searchResults && (
-        <section style={{ width: '100%' }}>
-          <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF', marginBottom: '16px' }}>
-            Search Results for &quot;{searchQuery}&quot;
-          </h3>
-
-          {searchResults.matchedRestaurants.length === 0 && searchResults.matchedItems.length === 0 ? (
-            <div style={{ padding: '40px 0', textAlign: 'center', color: '#9CA3AF' }}>
-              <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#FFF' }}>No matching items or restaurants found</p>
-              <p style={{ fontSize: '14px', margin: '8px 0 0 0' }}>Try searching for a different dish, cuisine, or restaurant name.</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-              {searchResults.matchedRestaurants.length > 0 && (
-                <div>
-                  <h4 style={{ fontSize: '18px', color: '#FFB800', marginBottom: '12px' }}>Matching Restaurants</h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-                    {searchResults.matchedRestaurants.map(({ cuisineName, restaurant }) => (
-                      <div 
-                        key={restaurant.id} 
-                        onClick={() => {
-                          setSelectedRestaurant(restaurant);
-                          setSearchQuery('');
-                        }}
-                        style={{ backgroundColor: '#1E1E24', borderRadius: '16px', overflow: 'hidden', border: '1px solid #2E2E38', display: 'flex', gap: '16px', padding: '16px', cursor: 'pointer' }}
-                      >
-                        <div style={{ width: '100px', height: '100px', position: 'relative', flexShrink: 0 }}>
-                          <img src={restaurant.image} alt={restaurant.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
-                          <span style={{ position: 'absolute', top: '6px', left: '6px', backgroundColor: '#FF5A36', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '4px' }}>
-                            {cuisineName}
-                          </span>
-                        </div>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                            <h4 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>{restaurant.name}</h4>
-                            <span style={{ color: '#FFB800', fontWeight: 'bold', fontSize: '13px' }}>{restaurant.rating}</span>
-                          </div>
-                          <div style={{ display: 'flex', gap: '8px', color: '#9CA3AF', fontSize: '12px', marginBottom: '8px' }}>
-                            <span>⏱️ {restaurant.time}</span>
-                            <span>•</span>
-                            <span>{restaurant.price}</span>
-                          </div>
-                          <span style={{ color: '#FF5A36', fontSize: '12px', fontWeight: 'bold' }}>View Menu →</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {searchResults.matchedItems.length > 0 && (
-                <div>
-                  <h4 style={{ fontSize: '18px', color: '#FFB800', marginBottom: '12px' }}>Matching Menu Dishes</h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '18px' }}>
-                    {searchResults.matchedItems.map(({ cuisineName, restaurantName, item }) => (
-                      <div key={item.id} style={{ backgroundColor: '#1E1E24', borderRadius: '16px', padding: '18px', border: '1px solid #2E2E38', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '12px' }}>
-                        <div>
-                          <div style={{ display: 'flex', gap: '6px', marginBottom: '6px', fontSize: '11px', color: '#FFB800' }}>
-                            <span>{cuisineName}</span>
-                            <span>•</span>
-                            <span>{restaurantName}</span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                            <div style={{ 
-                              width: '16px', 
-                              height: '16px', 
-                              border: `1.5px solid ${item.isVeg ? '#10B981' : '#EF4444'}`, 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              justifyContent: 'center', 
-                              borderRadius: '3px',
-                              flexShrink: 0
-                            }}>
-                              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: item.isVeg ? '#10B981' : '#EF4444' }} />
-                            </div>
-                            <h5 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: '#FFF' }}>{item.name}</h5>
-                          </div>
-                          <p style={{ color: '#9CA3AF', fontSize: '12px', margin: '0 0 10px 0', lineHeight: '1.4' }}>{item.description}</p>
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                          <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFB800' }}>${item.price.toFixed(2)}</span>
-                          <button 
-                            onClick={() => handleAddToCart({ ...item, restaurantName })}
-                            style={{ 
-                              padding: '8px 14px', 
-                              backgroundColor: '#FF5A36', 
-                              color: '#FFF', 
-                              border: 'none', 
-                              borderRadius: '10px', 
-                              fontWeight: 'bold', 
-                              fontSize: '12px',
-                              cursor: 'pointer',
-                              whiteSpace: 'nowrap',
-                              boxShadow: '0 0 10px rgba(255, 90, 54, 0.3)'
-                            }}
-                          >
-                            + Add to Cart
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Filter View: Restaurant Results */}
-      {!searchQuery && activeFilter && ['★ Top Rated', '⚡ Fastest Delivery', '🔥 Flash Deals'].includes(activeFilter) && (
-        <section style={{ width: '100%' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF' }}>{activeFilter} Restaurants across Cuisines</h3>
-            <p style={{ color: '#9CA3AF', fontSize: '14px', margin: '4px 0 0 0' }}>Showing all matching restaurants across all cuisines</p>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-            {getFilteredRestaurants().map(({ cuisineName, restaurant }) => (
-              <div 
-                key={restaurant.id} 
-                onClick={() => { setSelectedRestaurant(restaurant); setActiveFilter(null); }}
-                style={{ backgroundColor: '#1E1E24', borderRadius: '16px', overflow: 'hidden', border: '1px solid #2E2E38', display: 'flex', gap: '16px', padding: '16px', cursor: 'pointer' }}
-              >
-                <div style={{ width: '100px', height: '100px', position: 'relative', flexShrink: 0 }}>
-                  <img src={restaurant.image} alt={restaurant.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
-                  <span style={{ position: 'absolute', top: '6px', left: '6px', backgroundColor: '#FF5A36', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '4px' }}>
-                    {cuisineName}
-                  </span>
-                </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <h4 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>{restaurant.name}</h4>
-                    <span style={{ color: '#FFB800', fontWeight: 'bold', fontSize: '13px' }}>{restaurant.rating}</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px', color: '#9CA3AF', fontSize: '12px', marginBottom: '8px' }}>
-                    <span>⏱️ {restaurant.time}</span>
-                    <span>•</span>
-                    <span>{restaurant.price}</span>
-                  </div>
-                  <span style={{ color: '#FF5A36', fontSize: '12px', fontWeight: 'bold' }}>View Menu →</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Filter View: Item Results */}
-      {!searchQuery && activeFilter && ['🌱 Vegan / Healthy', '💳 Under $15'].includes(activeFilter) && (
-        <section style={{ width: '100%' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF' }}>{activeFilter} Items across Cuisines</h3>
-            <p style={{ color: '#9CA3AF', fontSize: '14px', margin: '4px 0 0 0' }}>Showing all matching menu items from every restaurant</p>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '18px' }}>
-            {getFilteredMenuItems().map(({ cuisineName, restaurantName, item }) => (
-              <div key={item.id} style={{ backgroundColor: '#1E1E24', borderRadius: '16px', padding: '18px', border: '1px solid #2E2E38', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '12px' }}>
-                <div>
-                  <div style={{ display: 'flex', gap: '6px', marginBottom: '6px', fontSize: '11px', color: '#FFB800' }}>
-                    <span>{cuisineName}</span>
-                    <span>•</span>
-                    <span>{restaurantName}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <div style={{ 
-                      width: '16px', 
-                      height: '16px', 
-                      border: `1.5px solid ${item.isVeg ? '#10B981' : '#EF4444'}`, 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      borderRadius: '3px',
-                      flexShrink: 0
-                    }}>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: item.isVeg ? '#10B981' : '#EF4444' }} />
-                    </div>
-                    <h5 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: '#FFF' }}>{item.name}</h5>
-                  </div>
-                  <p style={{ color: '#9CA3AF', fontSize: '12px', margin: '0 0 10px 0', lineHeight: '1.4' }}>{item.description}</p>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFB800' }}>${item.price.toFixed(2)}</span>
-                  <button 
-                    onClick={() => handleAddToCart({ ...item, restaurantName })}
-                    style={{ 
-                      padding: '8px 14px', 
-                      backgroundColor: '#FF5A36', 
-                      color: '#FFF', 
-                      border: 'none', 
-                      borderRadius: '10px', 
-                      fontWeight: 'bold', 
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap',
-                      boxShadow: '0 0 10px rgba(255, 90, 54, 0.3)'
-                    }}
-                  >
-                    + Add to Cart
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* --- NEW SECTION 1: QUICK REORDER / RECENT FAVORITES --- */}
-      {!searchQuery && !activeFilter && !selectedCuisine && !selectedRestaurant && (
-        <section style={{ width: '100%', marginBottom: '36px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '20px' }}>⚡</span>
-              <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF', margin: 0 }}>Quick Reorder / Recent Favorites</h3>
-            </div>
-            <span style={{ fontSize: '12px', color: '#FFB800', fontWeight: '600' }}>Order again in 1-tap</span>
-          </div>
-
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
-            gap: '16px' 
-          }}>
-            {RECENT_FAVORITES.map((fav) => (
-              <div 
-                key={fav.id}
-                style={{ 
-                  backgroundColor: '#1E1E24', 
-                  borderRadius: '16px', 
-                  border: '1px solid #2E2E38', 
-                  padding: '14px', 
-                  display: 'flex', 
-                  gap: '12px', 
-                  alignItems: 'center' 
-                }}
-              >
-                <img 
-                  src={fav.image} 
-                  alt={fav.name} 
-                  style={{ width: '70px', height: '70px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0 }} 
-                />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-                    <div style={{ 
-                      width: '12px', 
-                      height: '12px', 
-                      border: `1.5px solid ${fav.isVeg ? '#10B981' : '#EF4444'}`, 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      borderRadius: '2px',
-                      flexShrink: 0
-                    }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: fav.isVeg ? '#10B981' : '#EF4444' }} />
-                    </div>
-                    <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: '#FFF', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{fav.name}</h4>
-                  </div>
-                  <p style={{ fontSize: '11px', color: '#9CA3AF', margin: '0 0 6px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{fav.restaurantName}</p>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#FFB800' }}>${fav.price.toFixed(2)}</span>
-                    <button 
-                      onClick={() => handleAddToCart(fav)}
-                      style={{ 
-                        padding: '6px 12px', 
-                        backgroundColor: '#FF5A36', 
-                        color: '#FFF', 
-                        border: 'none', 
-                        borderRadius: '8px', 
-                        fontWeight: 'bold', 
-                        fontSize: '11px',
-                        cursor: 'pointer',
-                        boxShadow: '0 0 8px rgba(255, 90, 54, 0.3)'
-                      }}
-                    >
-                      Reorder
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* --- NEW SECTION 2: TRENDING DISHES NEAR YOU --- */}
-      {!searchQuery && !activeFilter && !selectedCuisine && !selectedRestaurant && (
-        <section style={{ width: '100%', marginBottom: '36px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '20px' }}>🔥</span>
-              <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF', margin: 0 }}>Trending Dishes Near You</h3>
-            </div>
-            <span style={{ fontSize: '12px', color: '#FF5A36', fontWeight: '600' }}>Popular this week</span>
-          </div>
-
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', 
-            gap: '18px' 
-          }}>
-            {TRENDING_DISHES.map((dish) => (
-              <div 
-                key={dish.id}
-                style={{ 
-                  backgroundColor: '#1E1E24', 
-                  borderRadius: '16px', 
-                  border: '1px solid #2E2E38', 
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between'
-                }}
-              >
-                <div style={{ height: '140px', position: 'relative', width: '100%' }}>
-                  <img 
-                    src={dish.image} 
-                    alt={dish.name} 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                  />
-                  <div style={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: 'rgba(13, 13, 17, 0.85)', backdropFilter: 'blur(4px)', padding: '4px 8px', borderRadius: '8px', color: '#FFB800', fontWeight: 'bold', fontSize: '11px' }}>
-                    {dish.rating}
-                  </div>
-                  <div style={{ position: 'absolute', bottom: '10px', left: '10px', backgroundColor: '#FF5A36', color: '#FFF', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '10px' }}>
-                    {dish.ordersCount}
-                  </div>
-                </div>
-
-                <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      <div style={{ 
-                        width: '14px', 
-                        height: '14px', 
-                        border: `1.5px solid ${dish.isVeg ? '#10B981' : '#EF4444'}`, 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center', 
-                        borderRadius: '3px',
-                        flexShrink: 0
-                      }}>
-                        <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: dish.isVeg ? '#10B981' : '#EF4444' }} />
-                      </div>
-                      <h4 style={{ fontSize: '15px', fontWeight: 'bold', color: '#FFF', margin: 0 }}>{dish.name}</h4>
-                    </div>
-                    <p style={{ color: '#FFB800', fontSize: '11px', margin: '0 0 8px 0', fontWeight: '500' }}>{dish.restaurantName}</p>
-                    <p style={{ color: '#9CA3AF', fontSize: '12px', margin: '0 0 12px 0', lineHeight: '1.4' }}>{dish.description}</p>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                    <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFB800' }}>${dish.price.toFixed(2)}</span>
-                    <button 
-                      onClick={() => handleAddToCart(dish)}
-                      style={{ 
-                        padding: '8px 14px', 
-                        backgroundColor: '#FF5A36', 
-                        color: '#FFF', 
-                        border: 'none', 
-                        borderRadius: '10px', 
-                        fontWeight: 'bold', 
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                        boxShadow: '0 0 10px rgba(255, 90, 54, 0.3)'
-                      }}
-                    >
-                      + Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Default View 1: Cuisines Grid */}
-      {!searchQuery && !activeFilter && !selectedCuisine && !selectedRestaurant && (
-        <section style={{ width: '100%', marginBottom: '40px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-            <span style={{ fontSize: '20px' }}>🧭</span>
-            <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF', margin: 0 }}>Explore Cuisines</h3>
-          </div>
-          
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
-            gap: '16px', 
-            width: '100%' 
-          }}>
-            {CUISINES_DATA.map((cuisine) => (
-              <div 
-                key={cuisine.id} 
-                onClick={() => setSelectedCuisine(cuisine)}
-                style={{ 
-                  height: '180px', 
-                  position: 'relative', 
-                  borderRadius: '16px', 
-                  overflow: 'hidden', 
-                  border: '1px solid #2E2E38', 
-                  backgroundColor: '#1E1E24', 
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s ease, border-color 0.2s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.borderColor = '#FF5A36';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.borderColor = '#2E2E38';
-                }}
-              >
-                <img 
-                  src={cuisine.image} 
-                  alt={cuisine.name} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                />
-                <div style={{ 
-                  position: 'absolute', 
-                  inset: 0, 
-                  display: 'flex', 
-                  alignItems: 'flex-end', 
-                  justifyContent: 'center', 
-                  padding: '12px',
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0) 20%, rgba(13,13,17,0.9) 100%)' 
-                }}>
-                  <span style={{ 
-                    color: '#FFFFFF', 
-                    backgroundColor: 'rgba(30, 30, 36, 0.85)', 
-                    backdropFilter: 'blur(4px)',
-                    border: '1px solid rgba(255, 255, 255, 0.15)', 
-                    padding: '6px 14px', 
-                    borderRadius: '20px', 
-                    fontWeight: 'bold',
-                    fontSize: '13px',
-                    textAlign: 'center',
-                    width: '100%'
-                  }}>
-                    {cuisine.name}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Default View 2: Restaurants in Cuisine */}
-      {!searchQuery && !activeFilter && selectedCuisine && !selectedRestaurant && (
-        <section style={{ width: '100%' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-            <span>🔥</span>
-            <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF' }}>10 Best {selectedCuisine.name} Restaurants</h3>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-            {selectedCuisine.restaurants.map((resto) => (
-              <div 
-                key={resto.id} 
-                onClick={() => setSelectedRestaurant(resto)}
-                style={{ backgroundColor: '#1E1E24', borderRadius: '16px', overflow: 'hidden', border: '1px solid #2E2E38', display: 'flex', gap: '16px', padding: '16px', cursor: 'pointer' }}
-              >
-                <div style={{ width: '100px', height: '100px', position: 'relative', flexShrink: 0 }}>
-                  <img src={resto.image} alt={resto.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
-                  <span style={{ position: 'absolute', top: '6px', left: '6px', backgroundColor: '#FF5A36', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '4px' }}>
-                    {resto.badge}
-                  </span>
-                </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <h4 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>{resto.name}</h4>
-                    <span style={{ color: '#FFB800', fontWeight: 'bold', fontSize: '13px' }}>{resto.rating}</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px', color: '#9CA3AF', fontSize: '12px', marginBottom: '8px' }}>
-                    <span>⏱️ {resto.time}</span>
-                    <span>•</span>
-                    <span>{resto.price}</span>
-                  </div>
-                  <span style={{ color: '#FF5A36', fontSize: '12px', fontWeight: 'bold' }}>View Menu →</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Default View 3: Restaurant Menu */}
-      {!searchQuery && !activeFilter && selectedRestaurant && (
-        <section style={{ width: '100%' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#FFFFFF', margin: '0 0 6px 0' }}>{selectedRestaurant.name}</h3>
-            <p style={{ color: '#9CA3AF', margin: 0, fontSize: '14px' }}>Select from our fresh culinary choices below:</p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '18px' }}>
-            {selectedRestaurant.menu.map((item) => (
-              <div key={item.id} style={{ backgroundColor: '#1E1E24', borderRadius: '16px', padding: '18px', border: '1px solid #2E2E38', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '12px' }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <div style={{ 
-                      width: '16px', 
-                      height: '16px', 
-                      border: `1.5px solid ${item.isVeg ? '#10B981' : '#EF4444'}`, 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      borderRadius: '3px',
-                      flexShrink: 0
-                    }}>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: item.isVeg ? '#10B981' : '#EF4444' }} />
-                    </div>
-                    <h5 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: '#FFF' }}>{item.name}</h5>
-                  </div>
-                  
-                  <p style={{ color: '#9CA3AF', fontSize: '12px', margin: '0 0 10px 0', lineHeight: '1.4' }}>{item.description}</p>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFB800' }}>${item.price.toFixed(2)}</span>
-                  <button 
-                    onClick={() => handleAddToCart({ ...item, restaurantName: selectedRestaurant.name })}
-                    style={{ 
-                      padding: '8px 14px', 
-                      backgroundColor: '#FF5A36', 
-                      color: '#FFF', 
-                      border: 'none', 
-                      borderRadius: '10px', 
-                      fontWeight: 'bold', 
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap',
-                      boxShadow: '0 0 10px rgba(255, 90, 54, 0.3)'
-                    }}
-                  >
-                    + Add to Cart
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Dynamic Cart Drawer */}
-      {isCartOpen && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'flex-end', zIndex: 100 }}>
-          <div style={{ width: '100%', maxWidth: '380px', height: '100%', backgroundColor: '#1E1E24', borderLeft: '1px solid #2E2E38', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h3 style={{ fontSize: '20px', fontWeight: 'bold' }}>Your Cart ({totalCartCount})</h3>
-                <button onClick={() => setIsCartOpen(false)} style={{ backgroundColor: 'transparent', border: 'none', color: '#fff', fontSize: '20px', cursor: 'pointer' }}>✕</button>
-              </div>
-
-              {cartItems.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: '#9CA3AF' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '12px' }}>🛒</div>
-                  <p style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#FFFFFF' }}>Your cart is empty</p>
-                  <p style={{ margin: '8px 0 0 0', fontSize: '13px' }}>Add items from a restaurant to get started.</p>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '60vh', overflowY: 'auto', paddingRight: '4px' }}>
-                  {cartItems.map((item) => (
-                    <div key={item.id} style={{ backgroundColor: '#0D0D11', borderRadius: '12px', padding: '12px', border: '1px solid #2E2E38' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                        <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{item.name}</span>
-                        <button onClick={() => removeFromCart(item.id)} style={{ backgroundColor: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer', fontSize: '12px' }}>✕</button>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ color: '#FFB800', fontWeight: 'bold', fontSize: '14px' }}>${(item.price * item.quantity).toFixed(2)}</span>
-                        
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#1E1E24', borderRadius: '6px', padding: '2px 8px' }}>
-                          <button onClick={() => handleQuantityChange(item.id, -1)} style={{ backgroundColor: 'transparent', border: 'none', color: '#FFF', fontWeight: 'bold', cursor: 'pointer' }}>-</button>
-                          <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{item.quantity}</span>
-                          <button onClick={() => handleQuantityChange(item.id, 1)} style={{ backgroundColor: 'transparent', border: 'none', color: '#FFF', fontWeight: 'bold', cursor: 'pointer' }}>+</button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '16px', fontWeight: 'bold' }}>
-                <span>Total Amount:</span>
-                <span style={{ color: '#FF5A36' }}>${cartTotal.toFixed(2)}</span>
-              </div>
-              <button 
-                disabled={cartItems.length === 0}
-                onClick={() => setIsCheckoutOpen(true)}
-                style={{ 
-                  width: '100%', 
-                  padding: '14px', 
-                  backgroundColor: cartItems.length > 0 ? '#FF5A36' : '#2E2E38', 
-                  color: cartItems.length > 0 ? '#FFF' : '#6B7280', 
-                  border: 'none', 
-                  borderRadius: '12px', 
-                  fontWeight: 'bold', 
-                  cursor: cartItems.length > 0 ? 'pointer' : 'not-allowed',
-                  boxShadow: cartItems.length > 0 ? '0 0 15px rgba(255, 90, 54, 0.3)' : 'none'
-                }}
-              >
-                Checkout • ${cartTotal.toFixed(2)}
-              </button>
-            </div>
-          </div>
+      {/* Realistic Skeleton Loader Overlay while fetching initial data */}
+      {!isLoaded ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', width: '100%' }}>
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <SkeletonCard key={idx} />
+          ))}
         </div>
+      ) : (
+        <>
+          {/* Animated Search Results Overlay */}
+          <AnimatePresence mode="wait">
+            {searchResults && (
+              <motion.section 
+                key="search-section"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25 }}
+                style={{ width: '100%' }}
+              >
+                <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF', marginBottom: '16px' }}>
+                  Search Results for &quot;{searchQuery}&quot;
+                </h3>
+
+                {searchResults.matchedRestaurants.length === 0 && searchResults.matchedItems.length === 0 ? (
+                  <div style={{ padding: '40px 0', textAlign: 'center', color: '#9CA3AF' }}>
+                    <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#FFF' }}>No matching items or restaurants found</p>
+                    <p style={{ fontSize: '14px', margin: '8px 0 0 0' }}>Try searching for a different dish, cuisine, or restaurant name.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                    {searchResults.matchedRestaurants.length > 0 && (
+                      <div>
+                        <h4 style={{ fontSize: '18px', color: '#FFB800', marginBottom: '12px' }}>Matching Restaurants</h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                          {searchResults.matchedRestaurants.map(({ cuisineName, restaurant }) => (
+                            <div 
+                              key={restaurant.id} 
+                              onClick={() => {
+                                setSelectedRestaurant(restaurant);
+                                setSearchQuery('');
+                              }}
+                              style={{ backgroundColor: '#1E1E24', borderRadius: '16px', overflow: 'hidden', border: '1px solid #2E2E38', display: 'flex', gap: '16px', padding: '16px', cursor: 'pointer' }}
+                            >
+                              <div style={{ width: '100px', height: '100px', position: 'relative', flexShrink: 0 }}>
+                                <img src={restaurant.image} alt={restaurant.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
+                                <span style={{ position: 'absolute', top: '6px', left: '6px', backgroundColor: '#FF5A36', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '4px' }}>
+                                  {cuisineName}
+                                </span>
+                              </div>
+                              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                  <h4 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>{restaurant.name}</h4>
+                                  <span style={{ color: '#FFB800', fontWeight: 'bold', fontSize: '13px' }}>{restaurant.rating}</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px', color: '#9CA3AF', fontSize: '12px', marginBottom: '8px' }}>
+                                  <span>⏱️ {restaurant.time}</span>
+                                  <span>•</span>
+                                  <span>{restaurant.price}</span>
+                                </div>
+                                <span style={{ color: '#FF5A36', fontSize: '12px', fontWeight: 'bold' }}>View Menu →</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {searchResults.matchedItems.length > 0 && (
+                      <div>
+                        <h4 style={{ fontSize: '18px', color: '#FFB800', marginBottom: '12px' }}>Matching Menu Dishes</h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '18px' }}>
+                          {searchResults.matchedItems.map(({ cuisineName, restaurantName, item }) => (
+                            <div key={item.id} style={{ backgroundColor: '#1E1E24', borderRadius: '16px', padding: '18px', border: '1px solid #2E2E38', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '12px' }}>
+                              <div>
+                                <div style={{ display: 'flex', gap: '6px', marginBottom: '6px', fontSize: '11px', color: '#FFB800' }}>
+                                  <span>{cuisineName}</span>
+                                  <span>•</span>
+                                  <span>{restaurantName}</span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                                  <div style={{ 
+                                    width: '16px', 
+                                    height: '16px', 
+                                    border: `1.5px solid ${item.isVeg ? '#10B981' : '#EF4444'}`, 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    borderRadius: '3px',
+                                    flexShrink: 0
+                                  }}>
+                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: item.isVeg ? '#10B981' : '#EF4444' }} />
+                                  </div>
+                                  <h5 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: '#FFF' }}>{item.name}</h5>
+                                </div>
+                                <p style={{ color: '#9CA3AF', fontSize: '12px', margin: '0 0 10px 0', lineHeight: '1.4' }}>{item.description}</p>
+                              </div>
+
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                                <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFB800' }}>${item.price.toFixed(2)}</span>
+                                <motion.button 
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => handleAddToCart({ ...item, restaurantName })}
+                                  style={{ 
+                                    padding: '8px 14px', 
+                                    backgroundColor: '#FF5A36', 
+                                    color: '#FFF', 
+                                    border: 'none', 
+                                    borderRadius: '10px', 
+                                    fontWeight: 'bold', 
+                                    fontSize: '12px',
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap',
+                                    boxShadow: '0 0 10px rgba(255, 90, 54, 0.3)'
+                                  }}
+                                >
+                                  + Add to Cart
+                                </motion.button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </motion.section>
+            )}
+          </AnimatePresence>
+
+          {/* Filter View: Restaurant Results */}
+          {!searchQuery && activeFilter && ['★ Top Rated', '⚡ Fastest Delivery', '🔥 Flash Deals'].includes(activeFilter) && (
+            <section style={{ width: '100%' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF' }}>{activeFilter} Restaurants across Cuisines</h3>
+                <p style={{ color: '#9CA3AF', fontSize: '14px', margin: '4px 0 0 0' }}>Showing all matching restaurants across all cuisines</p>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                {getFilteredRestaurants().map(({ cuisineName, restaurant }) => (
+                  <div 
+                    key={restaurant.id} 
+                    onClick={() => { setSelectedRestaurant(restaurant); setActiveFilter(null); }}
+                    style={{ backgroundColor: '#1E1E24', borderRadius: '16px', overflow: 'hidden', border: '1px solid #2E2E38', display: 'flex', gap: '16px', padding: '16px', cursor: 'pointer' }}
+                  >
+                    <div style={{ width: '100px', height: '100px', position: 'relative', flexShrink: 0 }}>
+                      <img src={restaurant.image} alt={restaurant.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
+                      <span style={{ position: 'absolute', top: '6px', left: '6px', backgroundColor: '#FF5A36', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '4px' }}>
+                        {cuisineName}
+                      </span>
+                    </div>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <h4 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>{restaurant.name}</h4>
+                        <span style={{ color: '#FFB800', fontWeight: 'bold', fontSize: '13px' }}>{restaurant.rating}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', color: '#9CA3AF', fontSize: '12px', marginBottom: '8px' }}>
+                        <span>⏱️ {restaurant.time}</span>
+                        <span>•</span>
+                        <span>{restaurant.price}</span>
+                      </div>
+                      <span style={{ color: '#FF5A36', fontSize: '12px', fontWeight: 'bold' }}>View Menu →</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Filter View: Item Results */}
+          {!searchQuery && activeFilter && ['🌱 Vegan / Healthy', '💳 Under $15'].includes(activeFilter) && (
+            <section style={{ width: '100%' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF' }}>{activeFilter} Items across Cuisines</h3>
+                <p style={{ color: '#9CA3AF', fontSize: '14px', margin: '4px 0 0 0' }}>Showing all matching menu items from every restaurant</p>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '18px' }}>
+                {getFilteredMenuItems().map(({ cuisineName, restaurantName, item }) => (
+                  <div key={item.id} style={{ backgroundColor: '#1E1E24', borderRadius: '16px', padding: '18px', border: '1px solid #2E2E38', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '12px' }}>
+                    <div>
+                      <div style={{ display: 'flex', gap: '6px', marginBottom: '6px', fontSize: '11px', color: '#FFB800' }}>
+                        <span>{cuisineName}</span>
+                        <span>•</span>
+                        <span>{restaurantName}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                        <div style={{ 
+                          width: '16px', 
+                          height: '16px', 
+                          border: `1.5px solid ${item.isVeg ? '#10B981' : '#EF4444'}`, 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          borderRadius: '3px',
+                          flexShrink: 0
+                        }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: item.isVeg ? '#10B981' : '#EF4444' }} />
+                        </div>
+                        <h5 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: '#FFF' }}>{item.name}</h5>
+                      </div>
+                      <p style={{ color: '#9CA3AF', fontSize: '12px', margin: '0 0 10px 0', lineHeight: '1.4' }}>{item.description}</p>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                      <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFB800' }}>${item.price.toFixed(2)}</span>
+                      <motion.button 
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleAddToCart({ ...item, restaurantName })}
+                        style={{ 
+                          padding: '8px 14px', 
+                          backgroundColor: '#FF5A36', 
+                          color: '#FFF', 
+                          border: 'none', 
+                          borderRadius: '10px', 
+                          fontWeight: 'bold', 
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          boxShadow: '0 0 10px rgba(255, 90, 54, 0.3)'
+                        }}
+                      >
+                        + Add to Cart
+                      </motion.button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* --- NEW SECTION 1: QUICK REORDER / RECENT FAVORITES --- */}
+          {!searchQuery && !activeFilter && !selectedCuisine && !selectedRestaurant && (
+            <section style={{ width: '100%', marginBottom: '36px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '20px' }}>⚡</span>
+                  <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF', margin: 0 }}>Quick Reorder / Recent Favorites</h3>
+                </div>
+                <span style={{ fontSize: '12px', color: '#FFB800', fontWeight: '600' }}>Order again in 1-tap</span>
+              </div>
+
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+                gap: '16px' 
+              }}>
+                {RECENT_FAVORITES.map((fav) => (
+                  <div 
+                    key={fav.id}
+                    style={{ 
+                      backgroundColor: '#1E1E24', 
+                      borderRadius: '16px', 
+                      border: '1px solid #2E2E38', 
+                      padding: '14px', 
+                      display: 'flex', 
+                      gap: '12px', 
+                      alignItems: 'center' 
+                    }}
+                  >
+                    <img 
+                      src={fav.image} 
+                      alt={fav.name} 
+                      style={{ width: '70px', height: '70px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0 }} 
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <div style={{ 
+                          width: '12px', 
+                          height: '12px', 
+                          border: `1.5px solid ${fav.isVeg ? '#10B981' : '#EF4444'}`, 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          borderRadius: '2px',
+                          flexShrink: 0
+                        }}>
+                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: fav.isVeg ? '#10B981' : '#EF4444' }} />
+                        </div>
+                        <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: '#FFF', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{fav.name}</h4>
+                      </div>
+                      <p style={{ fontSize: '11px', color: '#9CA3AF', margin: '0 0 6px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{fav.restaurantName}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#FFB800' }}>${fav.price.toFixed(2)}</span>
+                        <motion.button 
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleAddToCart(fav)}
+                          style={{ 
+                            padding: '6px 12px', 
+                            backgroundColor: '#FF5A36', 
+                            color: '#FFF', 
+                            border: 'none', 
+                            borderRadius: '8px', 
+                            fontWeight: 'bold', 
+                            fontSize: '11px',
+                            cursor: 'pointer',
+                            boxShadow: '0 0 8px rgba(255, 90, 54, 0.3)'
+                          }}
+                        >
+                          Reorder
+                        </motion.button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* --- NEW SECTION 2: TRENDING DISHES NEAR YOU --- */}
+          {!searchQuery && !activeFilter && !selectedCuisine && !selectedRestaurant && (
+            <section style={{ width: '100%', marginBottom: '36px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '20px' }}>🔥</span>
+                  <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF', margin: 0 }}>Trending Dishes Near You</h3>
+                </div>
+                <span style={{ fontSize: '12px', color: '#FF5A36', fontWeight: '600' }}>Popular this week</span>
+              </div>
+
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', 
+                gap: '18px' 
+              }}>
+                {TRENDING_DISHES.map((dish) => (
+                  <div 
+                    key={dish.id}
+                    style={{ 
+                      backgroundColor: '#1E1E24', 
+                      borderRadius: '16px', 
+                      border: '1px solid #2E2E38', 
+                      overflow: 'hidden',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    <div style={{ height: '140px', position: 'relative', width: '100%' }}>
+                      <img 
+                        src={dish.image} 
+                        alt={dish.name} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      />
+                      <div style={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: 'rgba(13, 13, 17, 0.85)', backdropFilter: 'blur(4px)', padding: '4px 8px', borderRadius: '8px', color: '#FFB800', fontWeight: 'bold', fontSize: '11px' }}>
+                        {dish.rating}
+                      </div>
+                      <div style={{ position: 'absolute', bottom: '10px', left: '10px', backgroundColor: '#FF5A36', color: '#FFF', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '10px' }}>
+                        {dish.ordersCount}
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                          <div style={{ 
+                            width: '14px', 
+                            height: '14px', 
+                            border: `1.5px solid ${dish.isVeg ? '#10B981' : '#EF4444'}`, 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            borderRadius: '3px',
+                            flexShrink: 0
+                          }}>
+                            <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: dish.isVeg ? '#10B981' : '#EF4444' }} />
+                          </div>
+                          <h4 style={{ fontSize: '15px', fontWeight: 'bold', color: '#FFF', margin: 0 }}>{dish.name}</h4>
+                        </div>
+                        <p style={{ color: '#FFB800', fontSize: '11px', margin: '0 0 8px 0', fontWeight: '500' }}>{dish.restaurantName}</p>
+                        <p style={{ color: '#9CA3AF', fontSize: '12px', margin: '0 0 12px 0', lineHeight: '1.4' }}>{dish.description}</p>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                        <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFB800' }}>${dish.price.toFixed(2)}</span>
+                        <motion.button 
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleAddToCart(dish)}
+                          style={{ 
+                            padding: '8px 14px', 
+                            backgroundColor: '#FF5A36', 
+                            color: '#FFF', 
+                            border: 'none', 
+                            borderRadius: '10px', 
+                            fontWeight: 'bold', 
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            boxShadow: '0 0 10px rgba(255, 90, 54, 0.3)'
+                          }}
+                        >
+                          + Add to Cart
+                        </motion.button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Default View 1: Cuisines Grid */}
+          {!searchQuery && !activeFilter && !selectedCuisine && !selectedRestaurant && (
+            <section style={{ width: '100%', marginBottom: '40px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                <span style={{ fontSize: '20px' }}>🧭</span>
+                <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF', margin: 0 }}>Explore Cuisines</h3>
+              </div>
+              
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
+                gap: '16px', 
+                width: '100%' 
+              }}>
+                {CUISINES_DATA.map((cuisine) => (
+                  <motion.div 
+                    key={cuisine.id} 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedCuisine(cuisine)}
+                    style={{ 
+                      height: '180px', 
+                      position: 'relative', 
+                      borderRadius: '16px', 
+                      overflow: 'hidden', 
+                      border: '1px solid #2E2E38', 
+                      backgroundColor: '#1E1E24', 
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <img 
+                      src={cuisine.image} 
+                      alt={cuisine.name} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                    <div style={{ 
+                      position: 'absolute', 
+                      inset: 0, 
+                      display: 'flex', 
+                      alignItems: 'flex-end', 
+                      justifyContent: 'center', 
+                      padding: '12px',
+                      background: 'linear-gradient(180deg, rgba(0,0,0,0) 20%, rgba(13,13,17,0.9) 100%)' 
+                    }}>
+                      <span style={{ 
+                        color: '#FFFFFF', 
+                        backgroundColor: 'rgba(30, 30, 36, 0.85)', 
+                        backdropFilter: 'blur(4px)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)', 
+                        padding: '6px 14px', 
+                        borderRadius: '20px', 
+                        fontWeight: 'bold',
+                        fontSize: '13px',
+                        textAlign: 'center',
+                        width: '100%'
+                      }}>
+                        {cuisine.name}
+                      </span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Default View 2: Restaurants in Cuisine */}
+          {!searchQuery && !activeFilter && selectedCuisine && !selectedRestaurant && (
+            <section style={{ width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                <span>🔥</span>
+                <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF' }}>10 Best {selectedCuisine.name} Restaurants</h3>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                {selectedCuisine.restaurants.map((resto) => (
+                  <div 
+                    key={resto.id} 
+                    onClick={() => setSelectedRestaurant(resto)}
+                    style={{ backgroundColor: '#1E1E24', borderRadius: '16px', overflow: 'hidden', border: '1px solid #2E2E38', display: 'flex', gap: '16px', padding: '16px', cursor: 'pointer' }}
+                  >
+                    <div style={{ width: '100px', height: '100px', position: 'relative', flexShrink: 0 }}>
+                      <img src={resto.image} alt={resto.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
+                      <span style={{ position: 'absolute', top: '6px', left: '6px', backgroundColor: '#FF5A36', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '4px' }}>
+                        {resto.badge}
+                      </span>
+                    </div>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <h4 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>{resto.name}</h4>
+                        <span style={{ color: '#FFB800', fontWeight: 'bold', fontSize: '13px' }}>{resto.rating}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', color: '#9CA3AF', fontSize: '12px', marginBottom: '8px' }}>
+                        <span>⏱️ {resto.time}</span>
+                        <span>•</span>
+                        <span>{resto.price}</span>
+                      </div>
+                      <span style={{ color: '#FF5A36', fontSize: '12px', fontWeight: 'bold' }}>View Menu →</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Default View 3: Restaurant Menu */}
+          {!searchQuery && !activeFilter && selectedRestaurant && (
+            <section style={{ width: '100%' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#FFFFFF', margin: '0 0 6px 0' }}>{selectedRestaurant.name}</h3>
+                <p style={{ color: '#9CA3AF', margin: 0, fontSize: '14px' }}>Select from our fresh culinary choices below:</p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '18px' }}>
+                {selectedRestaurant.menu.map((item) => (
+                  <div key={item.id} style={{ backgroundColor: '#1E1E24', borderRadius: '16px', padding: '18px', border: '1px solid #2E2E38', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '12px' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                        <div style={{ 
+                          width: '16px', 
+                          height: '16px', 
+                          border: `1.5px solid ${item.isVeg ? '#10B981' : '#EF4444'}`, 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          borderRadius: '3px',
+                          flexShrink: 0
+                        }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: item.isVeg ? '#10B981' : '#EF4444' }} />
+                        </div>
+                        <h5 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: '#FFF' }}>{item.name}</h5>
+                      </div>
+                      
+                      <p style={{ color: '#9CA3AF', fontSize: '12px', margin: '0 0 10px 0', lineHeight: '1.4' }}>{item.description}</p>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                      <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFB800' }}>${item.price.toFixed(2)}</span>
+                      <motion.button 
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleAddToCart({ ...item, restaurantName: selectedRestaurant.name })}
+                        style={{ 
+                          padding: '8px 14px', 
+                          backgroundColor: '#FF5A36', 
+                          color: '#FFF', 
+                          border: 'none', 
+                          borderRadius: '10px', 
+                          fontWeight: 'bold', 
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          boxShadow: '0 0 10px rgba(255, 90, 54, 0.3)'
+                        }}
+                      >
+                        + Add to Cart
+                      </motion.button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </>
       )}
+
+      {/* Dynamic Animated Cart Drawer */}
+      <AnimatePresence>
+        {isCartOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'flex-end', zIndex: 100 }}
+          >
+            <motion.div 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              style={{ width: '100%', maxWidth: '380px', height: '100%', backgroundColor: '#1E1E24', borderLeft: '1px solid #2E2E38', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}
+            >
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: 'bold' }}>Your Cart ({totalCartCount})</h3>
+                  <button onClick={() => setIsCartOpen(false)} style={{ backgroundColor: 'transparent', border: 'none', color: '#fff', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+                </div>
+
+                {cartItems.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px 0', color: '#9CA3AF' }}>
+                    <div style={{ fontSize: '48px', marginBottom: '12px' }}>🛒</div>
+                    <p style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#FFFFFF' }}>Your cart is empty</p>
+                    <p style={{ margin: '8px 0 0 0', fontSize: '13px' }}>Add items from a restaurant to get started.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '60vh', overflowY: 'auto', paddingRight: '4px' }}>
+                    {cartItems.map((item) => (
+                      <div key={item.id} style={{ backgroundColor: '#0D0D11', borderRadius: '12px', padding: '12px', border: '1px solid #2E2E38' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                          <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{item.name}</span>
+                          <button onClick={() => removeFromCart(item.id)} style={{ backgroundColor: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer', fontSize: '12px' }}>✕</button>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ color: '#FFB800', fontWeight: 'bold', fontSize: '14px' }}>${(item.price * item.quantity).toFixed(2)}</span>
+                          
+                          {/* Animated Spring Physics Quantity Bouncer */}
+                          <QuantityBouncer 
+                            quantity={item.quantity}
+                            onIncrement={() => handleQuantityChange(item.id, 1)}
+                            onDecrement={() => handleQuantityChange(item.id, -1)}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '16px', fontWeight: 'bold' }}>
+                  <span>Total Amount:</span>
+                  <span style={{ color: '#FF5A36' }}>${cartTotal.toFixed(2)}</span>
+                </div>
+                <button 
+                  disabled={cartItems.length === 0}
+                  onClick={() => setIsCheckoutOpen(true)}
+                  style={{ 
+                    width: '100%', 
+                    padding: '14px', 
+                    backgroundColor: cartItems.length > 0 ? '#FF5A36' : '#2E2E38', 
+                    color: cartItems.length > 0 ? '#FFF' : '#6B7280', 
+                    border: 'none', 
+                    borderRadius: '12px', 
+                    fontWeight: 'bold', 
+                    cursor: cartItems.length > 0 ? 'pointer' : 'not-allowed',
+                    boxShadow: cartItems.length > 0 ? '0 0 15px rgba(255, 90, 54, 0.3)' : 'none'
+                  }}
+                >
+                  Checkout • ${cartTotal.toFixed(2)}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* AI Assistant Modal */}
       <AiAssistantModal 
