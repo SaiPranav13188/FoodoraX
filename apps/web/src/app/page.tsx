@@ -45,6 +45,84 @@ export interface CartItem {
   description?: string;
 }
 
+// --- NEW STATIC DATA: QUICK REORDER & TRENDING ---
+const RECENT_FAVORITES = [
+  {
+    id: 'fav-1',
+    name: 'Butter Chicken (Murgh Makhani)',
+    restaurantName: 'Indian Bistro 1',
+    price: 15.99,
+    isVeg: false,
+    image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=800&q=80',
+    description: 'Tender chicken marinated in spiced yogurt cooked in a rich, buttery tomato cream sauce.'
+  },
+  {
+    id: 'fav-2',
+    name: 'Margherita Pizza',
+    restaurantName: 'Italian Kitchen 2',
+    price: 14.99,
+    isVeg: true,
+    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
+    description: 'Fresh mozzarella, San Marzano tomatoes, fresh basil, and extra virgin olive oil.'
+  },
+  {
+    id: 'fav-3',
+    name: 'Spicy Tuna Roll',
+    restaurantName: 'Japanese Palace 1',
+    price: 12.00,
+    isVeg: false,
+    image: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80',
+    description: 'Fresh minced tuna mixed with spicy mayo, cucumber, and sesame seeds.'
+  }
+];
+
+const TRENDING_DISHES = [
+  {
+    id: 'trend-1',
+    name: 'Classic Bacon Cheeseburger',
+    restaurantName: 'American Bistro 3',
+    price: 13.99,
+    rating: '4.9 ★',
+    ordersCount: '1.2k+ ordered this week',
+    isVeg: false,
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80',
+    description: 'Angus beef patty, crispy bacon, cheddar, lettuce, tomato, and secret burger sauce.'
+  },
+  {
+    id: 'trend-2',
+    name: 'Street Tacos al Pastor',
+    restaurantName: 'Mexican Kitchen 1',
+    price: 11.99,
+    rating: '4.8 ★',
+    ordersCount: '950+ ordered this week',
+    isVeg: false,
+    image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=800&q=80',
+    description: 'Marinated pork roasted on a vertical spit, pineapple, cilantro, and diced onions.'
+  },
+  {
+    id: 'trend-3',
+    name: 'Ceviche Classico',
+    restaurantName: 'Peruvian Palace 2',
+    price: 17.50,
+    rating: '4.9 ★',
+    ordersCount: '800+ ordered this week',
+    isVeg: false,
+    image: 'https://images.unsplash.com/photo-1535399831218-d5bd36d1a6b3?auto=format&fit=crop&w=800&q=80',
+    description: 'Fresh white fish cured in key lime juice with red onions, rocoto pepper, sweet potato, and corn.'
+  },
+  {
+    id: 'trend-4',
+    name: 'Classic Greek Salad',
+    restaurantName: 'Greek Bistro 1',
+    price: 12.50,
+    rating: '4.7 ★',
+    ordersCount: '600+ ordered this week',
+    isVeg: true,
+    image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80',
+    description: 'Vine tomatoes, cucumbers, kalamata olives, red onions, and a slab of feta with oregano.'
+  }
+];
+
 // --- REALISTIC MENU DISHES DICTIONARY ---
 const CUISINE_DISH_TEMPLATES: Record<string, { name: string; isVeg: boolean; desc: string; basePrice: number }[]> = {
   Italian: [
@@ -966,6 +1044,173 @@ export default function Home() {
                   >
                     + Add to Cart
                   </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* --- NEW SECTION 1: QUICK REORDER / RECENT FAVORITES --- */}
+      {!searchQuery && !activeFilter && !selectedCuisine && !selectedRestaurant && (
+        <section style={{ width: '100%', marginBottom: '36px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '20px' }}>⚡</span>
+              <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF', margin: 0 }}>Quick Reorder / Recent Favorites</h3>
+            </div>
+            <span style={{ fontSize: '12px', color: '#FFB800', fontWeight: '600' }}>Order again in 1-tap</span>
+          </div>
+
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+            gap: '16px' 
+          }}>
+            {RECENT_FAVORITES.map((fav) => (
+              <div 
+                key={fav.id}
+                style={{ 
+                  backgroundColor: '#1E1E24', 
+                  borderRadius: '16px', 
+                  border: '1px solid #2E2E38', 
+                  padding: '14px', 
+                  display: 'flex', 
+                  gap: '12px', 
+                  alignItems: 'center' 
+                }}
+              >
+                <img 
+                  src={fav.image} 
+                  alt={fav.name} 
+                  style={{ width: '70px', height: '70px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0 }} 
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                    <div style={{ 
+                      width: '12px', 
+                      height: '12px', 
+                      border: `1.5px solid ${fav.isVeg ? '#10B981' : '#EF4444'}`, 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      borderRadius: '2px',
+                      flexShrink: 0
+                    }}>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: fav.isVeg ? '#10B981' : '#EF4444' }} />
+                    </div>
+                    <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: '#FFF', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{fav.name}</h4>
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#9CA3AF', margin: '0 0 6px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{fav.restaurantName}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#FFB800' }}>${fav.price.toFixed(2)}</span>
+                    <button 
+                      onClick={() => handleAddToCart(fav)}
+                      style={{ 
+                        padding: '6px 12px', 
+                        backgroundColor: '#FF5A36', 
+                        color: '#FFF', 
+                        border: 'none', 
+                        borderRadius: '8px', 
+                        fontWeight: 'bold', 
+                        fontSize: '11px',
+                        cursor: 'pointer',
+                        boxShadow: '0 0 8px rgba(255, 90, 54, 0.3)'
+                      }}
+                    >
+                      Reorder
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* --- NEW SECTION 2: TRENDING DISHES NEAR YOU --- */}
+      {!searchQuery && !activeFilter && !selectedCuisine && !selectedRestaurant && (
+        <section style={{ width: '100%', marginBottom: '36px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '20px' }}>🔥</span>
+              <h3 style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFFFFF', margin: 0 }}>Trending Dishes Near You</h3>
+            </div>
+            <span style={{ fontSize: '12px', color: '#FF5A36', fontWeight: '600' }}>Popular this week</span>
+          </div>
+
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', 
+            gap: '18px' 
+          }}>
+            {TRENDING_DISHES.map((dish) => (
+              <div 
+                key={dish.id}
+                style={{ 
+                  backgroundColor: '#1E1E24', 
+                  borderRadius: '16px', 
+                  border: '1px solid #2E2E38', 
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justify: 'space-between'
+                }}
+              >
+                <div style={{ height: '140px', position: 'relative', width: '100%' }}>
+                  <img 
+                    src={dish.image} 
+                    alt={dish.name} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  />
+                  <div style={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: 'rgba(13, 13, 17, 0.85)', backdropFilter: 'blur(4px)', padding: '4px 8px', borderRadius: '8px', color: '#FFB800', fontWeight: 'bold', fontSize: '11px' }}>
+                    {dish.rating}
+                  </div>
+                  <div style={{ position: 'absolute', bottom: '10px', left: '10px', backgroundColor: '#FF5A36', color: '#FFF', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '10px' }}>
+                    {dish.ordersCount}
+                  </div>
+                </div>
+
+                <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <div style={{ 
+                        width: '14px', 
+                        height: '14px', 
+                        border: `1.5px solid ${dish.isVeg ? '#10B981' : '#EF4444'}`, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        borderRadius: '3px',
+                        flexShrink: 0
+                      }}>
+                        <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: dish.isVeg ? '#10B981' : '#EF4444' }} />
+                      </div>
+                      <h4 style={{ fontSize: '15px', fontWeight: 'bold', color: '#FFF', margin: 0 }}>{dish.name}</h4>
+                    </div>
+                    <p style={{ color: '#FFB800', fontSize: '11px', margin: '0 0 8px 0', fontWeight: '500' }}>{dish.restaurantName}</p>
+                    <p style={{ color: '#9CA3AF', fontSize: '12px', margin: '0 0 12px 0', lineHeight: '1.4' }}>{dish.description}</p>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                    <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#FFB800' }}>${dish.price.toFixed(2)}</span>
+                    <button 
+                      onClick={() => handleAddToCart(dish)}
+                      style={{ 
+                        padding: '8px 14px', 
+                        backgroundColor: '#FF5A36', 
+                        color: '#FFF', 
+                        border: 'none', 
+                        borderRadius: '10px', 
+                        fontWeight: 'bold', 
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        boxShadow: '0 0 10px rgba(255, 90, 54, 0.3)'
+                      }}
+                    >
+                      + Add to Cart
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
