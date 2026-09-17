@@ -1154,7 +1154,7 @@ export default function Home() {
                   overflow: 'hidden',
                   display: 'flex',
                   flexDirection: 'column',
-                  justify: 'space-between'
+                  justifyContent: 'space-between'
                 }}
               >
                 <div style={{ height: '140px', position: 'relative', width: '100%' }}>
