@@ -26,7 +26,8 @@ export interface CreateOrderDto {
 export class OrdersController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createOrder(@Body() body: CreateOrderDto) {
+  // Added : Promise<any> return type annotation below
+  async createOrder(@Body() body: CreateOrderDto): Promise<any> {
     console.log('Received order payload:', body);
 
     const { items, totalAmount, userId } = body;
@@ -36,11 +37,9 @@ export class OrdersController {
     }
 
     try {
-      // 1. Ensure a valid User ID exists for the relation requirement
       let targetUserId = userId;
 
       if (!targetUserId) {
-        // Fallback: Fetch or create a default Customer role & Guest user
         let guestRole = await prisma.role.findUnique({
           where: { name: 'CUSTOMER' },
         });
@@ -70,7 +69,6 @@ export class OrdersController {
         targetUserId = guestUser.id;
       }
 
-      // 2. Ensure each item maps to an existing MenuItem
       const orderItemsData = [];
 
       for (const item of items) {
@@ -99,7 +97,6 @@ export class OrdersController {
         });
       }
 
-      // 3. Create Order matching schema fields exactly
       const order = await prisma.order.create({
         data: {
           userId: targetUserId,
