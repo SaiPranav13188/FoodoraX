@@ -12,6 +12,16 @@ const nextConfig = {
       },
     ],
   },
+
+  // Proxies frontend /api requests directly to your live Render backend
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'https://foodorax-2vgu.onrender.com',
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

@@ -1,9 +1,25 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { prisma, OrderStatus } from '@foodorax/database';
 
 export interface CreateOrderDto {
-  items: any[];
-  address: string;
-  totalAmount?: number;
+  items: Array<{
+    id?: string;
+    menuItemId?: string;
+    name: string;
+    price: number | string;
+    quantity: number;
+  }>;
+  address?: string;
+  totalAmount?: number | string;
+  userId?: string;
 }
 
 @Controller('orders')
@@ -13,30 +29,106 @@ export class OrdersController {
   async createOrder(@Body() body: CreateOrderDto) {
     console.log('Received order payload:', body);
 
-    const { items, address } = body;
+    const { items, totalAmount, userId } = body;
 
-    // Basic payload validation
     if (!items || !Array.isArray(items) || items.length === 0) {
       throw new BadRequestException('Order must contain at least one item');
     }
 
-    if (!address || typeof address !== 'string' || address.trim() === '') {
-      throw new BadRequestException('Valid delivery address is required');
+    try {
+      // 1. Ensure a valid User ID exists for the relation requirement
+      let targetUserId = userId;
+
+      if (!targetUserId) {
+        // Fallback: Fetch or create a default Customer role & Guest user
+        let guestRole = await prisma.role.findUnique({
+          where: { name: 'CUSTOMER' },
+        });
+
+        if (!guestRole) {
+          guestRole = await prisma.role.create({
+            data: { name: 'CUSTOMER', description: 'Customer role' },
+          });
+        }
+
+        let guestUser = await prisma.user.findFirst({
+          where: { email: 'guest@foodorax.com' },
+        });
+
+        if (!guestUser) {
+          guestUser = await prisma.user.create({
+            data: {
+              email: 'guest@foodorax.com',
+              passwordHash: 'guest_hashed_password',
+              firstName: 'Guest',
+              lastName: 'Customer',
+              roleId: guestRole.id,
+            },
+          });
+        }
+
+        targetUserId = guestUser.id;
+      }
+
+      // 2. Ensure each item maps to an existing MenuItem
+      const orderItemsData = [];
+
+      for (const item of items) {
+        const itemIdentifier = item.menuItemId || item.id;
+        let menuItem = null;
+
+        if (itemIdentifier) {
+          menuItem = await prisma.menuItem.findUnique({
+            where: { id: itemIdentifier },
+          });
+        }
+
+        if (!menuItem) {
+          menuItem = await prisma.menuItem.create({
+            data: {
+              name: item.name || 'Food Item',
+              price: Number(item.price) || 0,
+            },
+          });
+        }
+
+        orderItemsData.push({
+          menuItemId: menuItem.id,
+          quantity: Number(item.quantity) || 1,
+          price: Number(item.price) || Number(menuItem.price) || 0,
+        });
+      }
+
+      // 3. Create Order matching schema fields exactly
+      const order = await prisma.order.create({
+        data: {
+          userId: targetUserId,
+          status: OrderStatus.RECEIVED,
+          total: Number(totalAmount) || 0,
+          orderItems: {
+            create: orderItemsData,
+          },
+        },
+        include: {
+          orderItems: {
+            include: {
+              menuItem: true,
+            },
+          },
+        },
+      });
+
+      return {
+        success: true,
+        message: 'Order placed successfully',
+        orderId: order.id,
+        data: order,
+      };
+    } catch (error) {
+      console.error('Supabase write error:', error);
+      throw new InternalServerErrorException(
+        'Failed to save order to database',
+      );
     }
-
-    const orderId = `ORD-${Date.now()}`;
-
-    return {
-      success: true,
-      message: 'Order placed successfully',
-      orderId,
-      data: {
-        orderId,
-        items,
-        address,
-        totalAmount: body.totalAmount || 0,
-        createdAt: new Date().toISOString(),
-      },
-    };
   }
 }

@@ -13,13 +13,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Determine target backend URL
-    const backendUrl =
-      process.env.NEXT_PUBLIC_API_URL ||
-      "https://foodorax-2vgu.onrender.com";
+    // Sanitize base API URL to remove trailing slashes or duplicate /api prefixes
+    let baseUrl = (
+      process.env.NEXT_PUBLIC_API_URL || "https://foodorax-2vgu.onrender.com"
+    ).replace(/\/$/, "");
 
-    // ✅ Forward request to /api/orders (matches setGlobalPrefix('api') + @Controller('orders'))
-    const response = await fetch(`${backendUrl}/api/orders`, {
+    // Ensure base URL ends with /api cleanly
+    if (!baseUrl.endsWith("/api")) {
+      baseUrl = `${baseUrl}/api`;
+    }
+
+    // Target endpoint: https://foodorax-2vgu.onrender.com/api/orders
+    const targetUrl = `${baseUrl}/orders`;
+
+    // Forward request to NestJS backend on Render
+    const response = await fetch(targetUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -51,10 +59,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Return exact response payload from NestJS backend
     return NextResponse.json(
       {
         success: true,
-        orderId: data.orderId || `ORD-${Date.now()}`,
         ...data,
       },
       { status: 200 }
