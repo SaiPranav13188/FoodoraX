@@ -26,9 +26,8 @@ export interface CreateOrderDto {
 export class OrdersController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  // Added : Promise<any> return type annotation below
   async createOrder(@Body() body: CreateOrderDto): Promise<any> {
-    console.log('Received order payload:', body);
+    console.log('Received payload:', body);
 
     const { items, totalAmount, userId } = body;
 
@@ -39,29 +38,27 @@ export class OrdersController {
     try {
       let targetUserId = userId;
 
+      // 1. Ensure Guest User Exists
       if (!targetUserId) {
-        let guestRole = await prisma.role.findUnique({
-          where: { name: 'CUSTOMER' },
-        });
-
-        if (!guestRole) {
-          guestRole = await prisma.role.create({
-            data: { name: 'CUSTOMER', description: 'Customer role' },
-          });
-        }
-
         let guestUser = await prisma.user.findFirst({
           where: { email: 'guest@foodorax.com' },
         });
 
         if (!guestUser) {
+          let role = await prisma.role.findFirst();
+          if (!role) {
+            role = await prisma.role.create({
+              data: { name: 'CUSTOMER', description: 'Customer role' },
+            });
+          }
+
           guestUser = await prisma.user.create({
             data: {
               email: 'guest@foodorax.com',
               passwordHash: 'guest_hashed_password',
               firstName: 'Guest',
               lastName: 'Customer',
-              roleId: guestRole.id,
+              roleId: role.id,
             },
           });
         }
@@ -69,8 +66,8 @@ export class OrdersController {
         targetUserId = guestUser.id;
       }
 
+      // 2. Map Items
       const orderItemsData = [];
-
       for (const item of items) {
         const itemIdentifier = item.menuItemId || item.id;
         let menuItem = null;
@@ -97,6 +94,7 @@ export class OrdersController {
         });
       }
 
+      // 3. Persist Order to Supabase
       const order = await prisma.order.create({
         data: {
           userId: targetUserId,
@@ -121,10 +119,12 @@ export class OrdersController {
         orderId: order.id,
         data: order,
       };
-    } catch (error) {
-      console.error('Supabase write error:', error);
+    } catch (error: any) {
+      console.error('DATABASE_SAVE_FAILED:', error);
+      // Returns exact error message to UI for quick debugging
+      const detailedMessage = error?.message || String(error);
       throw new InternalServerErrorException(
-        'Failed to save order to database',
+        `Failed to save order to database: ${detailedMessage}`,
       );
     }
   }
